@@ -19,7 +19,7 @@ import { removeCurrentUserAction } from "../../redux/actions/UserAction";
 import './styles.scss';
 
 const pages = ['XRPL', 'Cross-Chain', 'Tokens', 'Wallet'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = ['Profile', 'Account', 'Dashboard'];
 
 const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
@@ -49,7 +49,7 @@ const ResponsiveAppBar = () => {
     <AppBar position="static" className='navbar'>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <img src={cygnetdexlogo} alt='cygnetdex logo' className='logo' onClick={() => dispatch(removeCurrentUserAction())}/>
+          <img src={cygnetdexlogo} alt='cygnetdex logo' className='logo' />
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -146,9 +146,9 @@ const ResponsiveAppBar = () => {
                 </MenuItem>
                 
               ))}
-              {/* <MenuItem onClick={dispatch(removeCurrentUserAction())}>
+              <MenuItem onClick={() => dispatch(removeCurrentUserAction())}>
                   <Typography textAlign="center">Logout</Typography>
-                </MenuItem> */}
+                </MenuItem>
             </Menu>
           </Box>
           <NavbarWallet />

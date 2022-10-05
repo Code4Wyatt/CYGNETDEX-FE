@@ -4,8 +4,6 @@ import { XummPkce } from 'xumm-oauth2-pkce';
 import { addCurrentUserAction } from "../../redux/actions/UserAction";
 import { useSelector, connect, useDispatch } from "react-redux";
 
-
-
 function NavbarWallet(props) {
   let dispatch = useDispatch();
   const currentUser = useSelector((state) => state.currentUser.user);
