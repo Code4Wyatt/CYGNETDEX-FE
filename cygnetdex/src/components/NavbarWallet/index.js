@@ -5,6 +5,10 @@ import { addCurrentUserAction } from "../../redux/actions/UserAction";
 import { useSelector, connect, useDispatch } from "react-redux";
 
 
+
+function NavbarWallet(props) {
+  let dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.currentUser.user);
 /**
     * Construct & handle async (mobile)
     **/
@@ -50,7 +54,7 @@ function go() {
       sdk = authorized.sdk
 
       console.log('Authorized', /* authorized.jwt, */ authorized.me)
-
+      dispatch(addCurrentUserAction(authorized.me))
       // signinbtn.style.display = 'none'
 
       // document.getElementById('signedin').style.display = 'block'
@@ -68,8 +72,8 @@ function go() {
 
       reset()
 
-      document.getElementById('error').style.display = 'block'
-      document.getElementById('error').innerText = e.message
+      // document.getElementById('error').style.display = 'block'
+      // document.getElementById('error').innerText = e.message
     })
 }
 
@@ -109,17 +113,13 @@ function go_payload() {
     alert('Paylaod error', payloadError.message)
   })
 }
-
-function NavbarWallet(props) {
-  let dispatch = useDispatch();
-  
   return (
     <div className='wallet-container'>
       <div className='status'>
-        .
+        {currentUser.length > 0 ? <p style={{color: '#72ff26'}}>.</p> : <p style={{color: '#ff0303'}}>.</p>}
       </div>
       <div className='button' onClick={() => go()}>
-        Connect Wallet
+        {currentUser.length > 0 ? 'Wallet Connected' :' Connect Wallet' }
       </div>
     </div>
   );

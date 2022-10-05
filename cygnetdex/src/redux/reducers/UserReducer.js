@@ -15,7 +15,7 @@ export default function favouriteReducer(state = initialState.currentUser, actio
         case REMOVE_CURRENT_USER:
             return {
                 ...state,
-                user: state.user.filter((user) => user !== payload),
+                user: state.user.filter((user) => user[0] !== payload),
             };
         default: 
             return state;

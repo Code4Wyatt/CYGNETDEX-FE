@@ -14,7 +14,8 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import cygnetdexlogo from '../../assets/images/logo.png';
-
+import { useSelector, connect, useDispatch } from "react-redux";
+import { removeCurrentUserAction } from "../../redux/actions/UserAction";
 import './styles.scss';
 
 const pages = ['XRPL', 'Cross-Chain', 'Tokens', 'Wallet'];
@@ -23,8 +24,12 @@ const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 const ResponsiveAppBar = () => {
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
-  
+  const currentUser = useSelector((state) => state.currentUser.user);
+  let currentUserImage = currentUser[0]?.picture;
+  let dispatch = useDispatch();
 
+  console.log('currentUser', currentUser);
+  
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -44,7 +49,7 @@ const ResponsiveAppBar = () => {
     <AppBar position="static" className='navbar'>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <img src={cygnetdexlogo} alt='cygnetdex logo' className='logo' />
+          <img src={cygnetdexlogo} alt='cygnetdex logo' className='logo' onClick={() => dispatch(removeCurrentUserAction())}/>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -116,7 +121,7 @@ const ResponsiveAppBar = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="Remy Sharp" src={ currentUser ? currentUserImage : 'https://thumbs.dreamstime.com/b/default-avatar-photo-placeholder-profile-icon-eps-file-easy-to-edit-default-avatar-photo-placeholder-profile-icon-124557887.jpg'} />
               </IconButton>
             </Tooltip>
             <Menu
@@ -139,7 +144,11 @@ const ResponsiveAppBar = () => {
                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
                   <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
+                
               ))}
+              {/* <MenuItem onClick={dispatch(removeCurrentUserAction())}>
+                  <Typography textAlign="center">Logout</Typography>
+                </MenuItem> */}
             </Menu>
           </Box>
           <NavbarWallet />
@@ -149,7 +158,13 @@ const ResponsiveAppBar = () => {
   );
 };
 
+const mapStateToProps = (state) => {
+  return {
+    user: state.user,
+  };
+};
 
-export default ResponsiveAppBar;
+export default connect(mapStateToProps)(ResponsiveAppBar);
+
 
 
