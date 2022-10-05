@@ -1,4 +1,4 @@
-import * as React from 'react';
+import {useState}from 'react';
 import NavbarWallet from '../NavbarWallet/index';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -14,19 +14,21 @@ import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import cygnetdexlogo from '../../assets/images/logo.png';
+
 import './styles.scss';
 
 const pages = ['XRPL', 'Cross-Chain', 'Tokens', 'Wallet'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 const ResponsiveAppBar = () => {
-  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-  const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  
 
-  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
 
@@ -146,6 +148,7 @@ const ResponsiveAppBar = () => {
     </AppBar>
   );
 };
+
 
 export default ResponsiveAppBar;
 
