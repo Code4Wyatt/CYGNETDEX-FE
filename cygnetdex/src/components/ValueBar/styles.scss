@@ -1,5 +1,5 @@
 .value-bar {
-    background-color: rgba(128, 128, 128, 0.644);
+    background-color: rgba(128, 128, 128, 0.438);
     width: 20vw;
     max-width: 200px;
     padding: 15px;
@@ -8,6 +8,23 @@
     left: 10%;
     margin: 10px;
     min-height: 30px;
+}
+
+.up {
+    color: green;
+    position: relative;
+    bottom: 15px;
+    left: 10px;
+    font-weight: bolder;
+  
+}
+
+.down {
+    color: red;
+    position: relative;
+    bottom: 15px;
+    left: 20px;
+    font-weight: bolder;
 }
 
 .circle {
@@ -23,9 +40,10 @@
         left: 10%;
         margin: 10px;
         min-height: 30px;
+        display: flex;
     }
     &--offline {
-        background-color: rgb(133, 124, 124);
+        background-color: rgba(206, 188, 188, 0.253);
         color: white;
         font-weight: bolder;
         width: 20vw;
@@ -36,5 +54,6 @@
         left: 10%;
         margin: 10px;
         min-height: 30px;
+        display: flex;
     }
   }

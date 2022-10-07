@@ -1,15 +1,20 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import './styles.scss'
 import ValueBar from '../../components/ValueBar'
 import OptionsPanel from '../../components/OptionsPanel'
-
+import CryptoGraph from '../../components/CryptoChart'
+<script defer src="https://www.livecoinwatch.com/static/lcw-widget.js"></script>
 export const Home = (props) => {
  const [xrswanValue, setXrswanValue] = useState('');
  const [xrpValue, setXrpValue] = useState('');
  const [xrswanTitle, setXrswanTitle] = useState('');
  const [xrpTitle, setXrpTitle] = useState('');
+ const [xrswanTrend, setXrswanTrend] = useState('');
+ const [xrpTrend, setXrpTrend] = useState('');
 
+ useEffect(() => {
+  const intervalId = setInterval(() => { 
   const fetchXrswanValues = async () => {
     try {
       const xrswanValues = await fetch(`https://api.onthedex.live/public/v1/ticker/XRSWAN.rUHoc9nQyZzahE5rq26QHkvBmnvCEoPAhZ:XRP`, {
@@ -23,6 +28,7 @@ export const Home = (props) => {
       console.log('xrswan', response);
       setXrswanTitle(response.pairs[0].base.currency);
       setXrswanValue(response.pairs[0].last);
+      setXrswanTrend(response.pairs[0].trend);
       console.log(xrswanValue);
     } catch (error) {
       console.log(error);
@@ -41,6 +47,7 @@ export const Home = (props) => {
       console.log('xrp', response);
       setXrpTitle(response.pairs[0].base);
       setXrpValue(response.pairs[0].last);
+      setXrpTrend(response.pairs[0].trend);
       console.log(xrpValue);
     } catch (error) {
       console.log(error);
@@ -48,11 +55,18 @@ export const Home = (props) => {
   }
   fetchXrswanValues();
   fetchXrpValues();
+}, 10000)
+
+    return () => clearInterval(intervalId);
+ }, []);
+
   return (
     <>
-    {xrswanValue && xrswanTitle ? <ValueBar title={xrswanTitle} value={xrswanValue}  /> : 'Loading'}
-    {xrpValue && xrpTitle ? <ValueBar title={xrpTitle} value={xrpValue} /> : 'Loading'}
+    <div class="livecoinwatch-widget-5" lcw-base="USD" lcw-color-tx="#999999" lcw-marquee-1="coins" lcw-marquee-2="movers" lcw-marquee-items="10" ></div>
+    {xrswanValue && xrswanTitle ? <ValueBar title={xrswanTitle} value={xrswanValue} trend={xrswanTrend} /> : 'Loading'}
+    {xrpValue && xrpTitle ? <ValueBar title={xrpTitle} value={xrpValue} trend={xrpTrend} /> : 'Loading'}
     <OptionsPanel />
+    <CryptoGraph />
     </>
     
   )
