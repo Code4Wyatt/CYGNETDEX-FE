@@ -88,7 +88,8 @@ export const Home = (props) => {
         data-testid="loader"
       />
       </div> </> : <>
-           <div
+          <div className="main">
+              <div
         class="livecoinwatch-widget-5"
         lcw-base="USD"
         lcw-color-tx="#999999"
@@ -102,12 +103,14 @@ export const Home = (props) => {
         "Loading"
       )}
       {xrpValue && xrpTitle ? (
-        <ValueBar title={xrpTitle} value={xrpValue} trend={xrpTrend} />
+        <ValueBar title={xrpTitle} value={xrpValue} trend={xrpTrend}  className='value-bar' />
       ) : (
         "Loading"
       )}
       <OptionsPanel />
       <CryptoGraph />
+          </div>
+           
       </>}
       
       
