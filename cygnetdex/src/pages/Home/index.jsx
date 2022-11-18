@@ -1,4 +1,4 @@
-import { useEffect, useState, CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import "./styles.scss";
 import ValueBar from "../../components/ValueBar";
@@ -10,12 +10,12 @@ import ClipLoader from "react-spinners/ClipLoader";
   src="https://www.livecoinwatch.com/static/lcw-widget.js"
 ></script>;
 export const Home = (props) => {
-  const [xrswanValue, setXrswanValue] = useState("");
-  const [xrpValue, setXrpValue] = useState("");
-  const [xrswanTitle, setXrswanTitle] = useState("");
-  const [xrpTitle, setXrpTitle] = useState("");
-  const [xrswanTrend, setXrswanTrend] = useState("");
-  const [xrpTrend, setXrpTrend] = useState("");
+  const [xrswanValue, setXrswanValue] = useState([]);
+  const [xrpValue, setXrpValue] = useState([]);
+  const [xrswanTitle, setXrswanTitle] = useState([]);
+  const [xrpTitle, setXrpTitle] = useState([]);
+  const [xrswanTrend, setXrswanTrend] = useState([]);
+  const [xrpTrend, setXrpTrend] = useState([]);
   let [loading, setLoading] = useState(true);
 
   const fetchXrswanValues = async () => {
@@ -53,11 +53,11 @@ export const Home = (props) => {
           },
         }
       );
-      let response = await xrpValues.json();
-      console.log("xrp", response);
-      setXrpTitle(response.pairs[0].base);
-      setXrpValue(response.pairs[0].last);
-      setXrpTrend(response.pairs[0].trend);
+      let Rresponse = await xrpValues.json();
+      console.log("xrp", Rresponse);
+      // setXrpTitle(response.pairs[0].base.currency);
+      // setXrpValue(response.pairs[0].last);
+      // setXrpTrend(response.pairs[0].trend);
       setLoading(false);
       console.log(xrpValue);
     } catch (error) {
@@ -72,7 +72,7 @@ export const Home = (props) => {
     const intervalId = setInterval(() => {
       fetchXrswanValues();
       fetchXrpValues();
-    }, 1000);
+    }, 134000);
 
     return () => clearInterval(intervalId);
   }, []);
