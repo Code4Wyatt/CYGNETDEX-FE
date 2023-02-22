@@ -1,0 +1,39 @@
+.cross-chain-tool {
+  background-color: rgba(128, 128, 128, 0.49);
+  height: 400px;
+  width: 400px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+
+  .logo {
+    display: inline-block;
+  }
+
+  .subtitle {
+    border: 1px solid white;
+    width: 150px;
+    position: relative;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+  }
+
+  .available {
+    position: relative;
+    right: 20%;
+  }
+
+  label {
+    margin-right: 10px;
+  }
+
+  input {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+}

@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import TradingViewWidget from "react-tradingview-widget";
-import cors from "cors";
 
 const CryptoChart = () => {
   const [data, setData] = useState([]);
@@ -35,7 +34,7 @@ const CryptoChart = () => {
 
   let base = "BTC";
   console.log("!!!!!!!!base", base);
-  let quote = data[0].spec?.quote;
+  let quote = data[0]?.spec?.quote;
   let symbol = `CRYPTOCAP:${base}/${quote}`;
   const reformattedData = data.map((point) => {
     return {

@@ -16,6 +16,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 import cygnetdexlogo from '../../assets/images/logo.png';
 import { useSelector, connect, useDispatch } from "react-redux";
 import { removeCurrentUserAction } from "../../redux/actions/UserAction";
+import { Link } from "react-router-dom";
 import './styles.scss';
 
 const pages = ['XRPL', 'Cross-Chain', 'Tokens', 'Wallet'];
@@ -29,6 +30,13 @@ const ResponsiveAppBar = () => {
   let dispatch = useDispatch();
 
   console.log('currentUser', currentUser);
+
+  const navigate = (page) => {
+    const url = window.location.href.split('/');
+  url[url.length - 1] = page.toLowerCase();
+  const newUrl = url.join('/');
+  window.location.href = newUrl;
+  }
   
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -49,7 +57,9 @@ const ResponsiveAppBar = () => {
     <AppBar position="static" className='navbar'>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <img src={cygnetdexlogo} alt='cygnetdex logo' className='logo' />
+          <Link to='/'>
+            <img src={cygnetdexlogo} alt='cygnetdex logo' className='logo' />
+          </Link>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -113,7 +123,9 @@ const ResponsiveAppBar = () => {
                 onClick={handleCloseNavMenu}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
-                {page}
+                <Link to={`/${page}`} className="app__bar-link">
+                  {page}
+                </Link>
               </Button>
             ))}
           </Box>
