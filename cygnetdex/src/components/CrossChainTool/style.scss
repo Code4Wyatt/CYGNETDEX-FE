@@ -28,16 +28,21 @@
     border: 1px solid #fffcfc;
     border-radius: 3px;
     height: 30px;
+    margin: 5px;
   }
 
   #from-input {
     text-align: right;
     width: 100%;
     background-color: #858d76b8;
+    color: white;
   }
 
   .input-text {
     position: absolute;
+    color: white;
+    left: 5px;
+    top: 3px;
   }
 
   .input-field {
@@ -48,9 +53,29 @@
     position: relative;
     right: 20%;
     margin-bottom: 20px;
+    color: white;
   }
 
   label {
     margin-right: 10px;
+  }
+
+  .css-aqpgxn-MuiFormLabel-root-MuiInputLabel-root {
+    color: white !important;
+  }
+
+  .css-1ptx2yq-MuiInputBase-root-MuiInput-root:after {
+    border-bottom: 2px solid #d2191970;
+    color: #d2191970;
+  }
+
+  .css-1ptx2yq-MuiInputBase-root-MuiInput-root {
+    color: rgb(13, 13, 123);
+    font-weight: bold;
+  }
+
+  .receiving {
+    position: relative;
+    top: 10px;
   }
 }
