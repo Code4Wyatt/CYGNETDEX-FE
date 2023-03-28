@@ -96,7 +96,7 @@ export const Home = (props) => {
         <>
           <div className="main">
             <div
-              class="livecoinwatch-widget-5"
+              className="livecoinwatch-widget-5"
               lcw-base="USD"
               lcw-color-tx="#999999"
               lcw-marquee-1="coins"

@@ -27,7 +27,9 @@ const AccountExchangeComponent: React.FC = () => {
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [receivingAddress, setReceivingAddress] = useState<string>("");
-  let currentUser = useSelector((state: initialState) => state.currentUser.user);
+  let currentUser = useSelector(
+    (state: initialState) => state.currentUser.user
+  );
   let host = process.env.REACT_APP_HOST;
   let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
 
@@ -47,9 +49,8 @@ const AccountExchangeComponent: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-   console.log('submitted');
-   try {
-      
+    console.log("submitted");
+    try {
       const request = await fetch(`https://${host}/api/v2/accountExchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,7 +58,6 @@ const AccountExchangeComponent: React.FC = () => {
           depositCoinCode: "XRSWAN",
           receiveCoinCode: "XRP",
           depositCoinAmt: "0.000001",
-        
           receiveCoinAmt: "1",
           destinationAddr: "rPAHeHC5pioxYBUkUtAmnEwe38QEpSF5Lv",
           refundAddr: "rPAHeHC5pioxYBUkUtAmnEwe38QEpSF5Lv",
@@ -67,7 +67,7 @@ const AccountExchangeComponent: React.FC = () => {
         }),
       });
       const data = await request.json();
-      console.log('DATAAAAAAAAAAAA', data);
+      console.log("DATAAAAAAAAAAAA", data);
     } catch (error) {
       console.error(error);
     }
