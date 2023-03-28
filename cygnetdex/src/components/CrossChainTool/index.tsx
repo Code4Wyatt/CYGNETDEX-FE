@@ -25,12 +25,19 @@ interface AccountExchangeRequest {
   length: number;
 }
 
+interface DataResponse {
+  data: Array<any>;
+  resCode: string;
+  resMsg: string;
+  length: number;
+}
+
 const AccountExchangeComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [receivingAddress, setReceivingAddress] = useState<string>("");
-  const [coins, setCoins] = useState<string[]>([]);
+  const [coins, setCoins] = useState<any[]>([]);
 
   let currentUser = useSelector(
     (state: initialState) => state.currentUser
@@ -45,17 +52,20 @@ const AccountExchangeComponent: React.FC = () => {
     const fetchAccountBalances = async () => {
       try {
         let params = {
-          "coinAllCode": "xrswan",
-          "coinCode": "XRSWAN",
-          "coinName": "XRSWAN",
-          "isSupportAdvance": "N",
+          "supportType": "advanced",
+          "mainNetwork": "",
+
         }
+        let heldCoins = [];
         const response = await axios.post(
           `${host}/api/v1/queryCoinList`,
           params
         );
         let data = await response.data;
+        setCoins(data);
+
         console.log('fetchAccountBalances data', data)
+        console.log('fetchAccountBalances coins', coins)
         return data;
       } catch (error) {
         console.error(error);
@@ -66,9 +76,24 @@ const AccountExchangeComponent: React.FC = () => {
     fetchAccountBalances();
   }, [host]);
 
-  const handleFromChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const getHeldCoins = (coins: any): any | undefined => {
+    if (coins) {
+      let heldCoins = [];
+      for (let i = 0; i < coins?.data?.length; i++) {
+        console.log('hoisadasda', coins.data[i].isSupportMemo);
+        if (coins.data[i].isSupportMemo == "Y") {
+          heldCoins.push(coins.data[i]);
+        }
+      }
+      console.log(heldCoins);
+      return heldCoins;
+    }
+  }
+
+  getHeldCoins(coins);
+
+
+  const handleFromChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setFrom(event.target.value);
     // try {
     //   let params = {
