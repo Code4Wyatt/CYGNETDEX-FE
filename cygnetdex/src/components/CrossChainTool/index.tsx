@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./style.scss";
 import cygnetdexlogo from "../../assets/images/logo.png";
 import { TextField } from "@mui/material";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 interface initialState {
   currentUser: {
-    user: [];
-  };
+    user: []
+  }
+
 }
 
 interface AccountExchangeRequest {
@@ -20,6 +22,7 @@ interface AccountExchangeRequest {
   equipmentNo: string;
   sourceType: string;
   sourceFlag: string;
+  length: number;
 }
 
 const AccountExchangeComponent: React.FC = () => {
@@ -27,15 +30,59 @@ const AccountExchangeComponent: React.FC = () => {
   const [from, setFrom] = useState<string>("");
   const [to, setTo] = useState<string>("");
   const [receivingAddress, setReceivingAddress] = useState<string>("");
+  const [coins, setCoins] = useState<string[]>([]);
+
   let currentUser = useSelector(
-    (state: initialState) => state.currentUser.user
+    (state: initialState) => state.currentUser
   );
   let host = process.env.REACT_APP_HOST;
   let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
 
-  console.log(currentUser);
-  const handleFromChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  console.log("OWERRRR", currentUser);
+
+
+  useEffect(() => {
+    const fetchAccountBalances = async () => {
+      try {
+        let params = {
+          "coinAllCode": "xrswan",
+          "coinCode": "XRSWAN",
+          "coinName": "XRSWAN",
+          "isSupportAdvance": "N",
+        }
+        const response = await axios.post(
+          `${host}/api/v1/queryCoinList`,
+          params
+        );
+        let data = await response.data;
+        console.log('fetchAccountBalances data', data)
+        return data;
+      } catch (error) {
+        console.error(error);
+        return [];
+      }
+    };
+
+    fetchAccountBalances();
+  }, [host]);
+
+  const handleFromChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setFrom(event.target.value);
+    // try {
+    //   let params = {
+    //     depositCoinCode: "ETH",
+    //     receiveCoinCode: "BNB(BSC)",
+    //   };
+    //   let rateData = await axios.post(
+    //     `https://${host}/api/v1/getBaseInfo`,
+    //     params
+    //   );
+    //   // console.log(rateData);
+    // } catch (error) {
+    //   console.log("handleFromChange ERROR", error);
+    // }
   };
 
   const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,11 +135,13 @@ const AccountExchangeComponent: React.FC = () => {
           id="from-input"
           name="from-input"
           defaultValue="0.0"
+          onChange={handleFromChange}
         />
         <select name="dropdown">
           <option value="option1"></option>
-          <option value="option2">Option 2</option>
-          <option value="option3">Option 3</option>
+          <option value="option2">XRSwan</option>
+          <option value="option3">CygnetX</option>
+          <option value="option3">XRP</option>
         </select>
       </div>
       <div style={{ display: "flex" }} className="input">
@@ -107,8 +156,24 @@ const AccountExchangeComponent: React.FC = () => {
         />
         <select name="dropdown">
           <option value="option1"></option>
-          <option value="option2">Option 2</option>
-          <option value="option3">Option 3</option>
+          <option value="option2">XRSwan</option>
+          <option value="option3">CygnetX</option>
+          <option value="option3">XRP</option>
+          <option value="option2">XRSwan</option>
+          <option value="option3">CygnetX</option>
+          <option value="option3">XRP</option>
+          <option value="option2">XRSwan</option>
+          <option value="option3">CygnetX</option>
+          <option value="option3">XRP</option>
+          <option value="option2">XRSwan</option>
+          <option value="option3">CygnetX</option>
+          <option value="option3">XRP</option>
+          <option value="option2">XRSwan</option>
+          <option value="option3">CygnetX</option>
+          <option value="option3">XRP</option>
+          <option value="option2">XRSwan</option>
+          <option value="option3">CygnetX</option>
+          <option value="option3">XRP</option>
         </select>
       </div>
       <TextField

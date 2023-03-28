@@ -5,7 +5,6 @@ import ValueBar from "../../components/ValueBar";
 import OptionsPanel from "../../components/OptionsPanel";
 import CryptoChart from "../../components/CryptoChart";
 import ClipLoader from "react-spinners/ClipLoader";
-import TradingViewChart from '../../components/TradingViewChart/TradingViewChart';
 
 <script
   defer
@@ -62,7 +61,7 @@ export const Home = (props) => {
       setXrpValue(response.pairs[0].last);
       setXrpTrend(response.pairs[0].trend);
       setLoading(false);
-      console.log(xrpValue);
+      
     } catch (error) {
       console.log('fetchXrpValues error', error);
     }
@@ -73,7 +72,7 @@ export const Home = (props) => {
       fetchXrswanValues();
       fetchXrpValues();
     }, 5000);
-
+    console.log(xrpValue);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -124,7 +123,7 @@ export const Home = (props) => {
             )}
             <OptionsPanel />
               <CryptoChart />
-              {/* <TradingViewChart /> */}
+             
           </div>
         </>
       )}
