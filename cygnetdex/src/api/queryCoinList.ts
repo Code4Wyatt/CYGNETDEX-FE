@@ -1,18 +1,17 @@
 import axios from "axios"
 
-interface Coin {
-    name: string
-    symbol: string
-    price: number
+interface QueryCoinListParams {
+    supportType: String,
+    mainNetwork?: String
 }
 
 const queryCoinList = async () => {
     let host = process.env.REACT_APP_HOST
 
     try {
-        let params = {
+        let params: QueryCoinListParams = {
             "supportType": "advanced",
-            "mainNetwork": "",
+            "mainNetwork": "ETH"
         }
 
         const response = await axios.post(
@@ -20,14 +19,14 @@ const queryCoinList = async () => {
             params,
             {
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': 'application/json'
                 }
             }
         )
 
         let coinList = await response.data
 
-        console.log('fetchAccountBalances coins', coinList)
+        console.log('queryCoinList coins', coinList)
 
         return coinList
     } catch (error) {

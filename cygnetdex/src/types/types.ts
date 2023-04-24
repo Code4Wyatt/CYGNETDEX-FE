@@ -6,6 +6,17 @@ interface initialState {
     }
 }
 
+interface Coin {
+    coinAllCode: String,
+    coinCode: String,
+    coinDecimal: 8,
+    contact: String,
+    isSupportAdvanced: String,
+    isSupportMemo: String,
+    mainNetwork: String,
+    noSupportCoin: String
+}
+
 interface AccountExchangeRequest {
     depositCoinCode: string
     receiveCoinCode: string
@@ -26,4 +37,4 @@ interface DataResponse {
     length: number
 }
 
-export type { initialState, AccountExchangeRequest, DataResponse }
+export type { initialState, Coin, AccountExchangeRequest, DataResponse }

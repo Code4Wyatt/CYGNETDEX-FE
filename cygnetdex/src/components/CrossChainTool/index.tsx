@@ -6,13 +6,28 @@ import { TextField } from "@mui/material";
 import { useSelector } from "react-redux";
 import { initialState, AccountExchangeRequest, DataResponse } from '../../types/types';
 import queryCoinList from '../../api/queryCoinList';
+import getBaseInfo from "../../api/getBaseInfo";
+import CoinLogo from '../CoinLogo';
+
+interface Coin {
+  coinAllCode: String,
+  coinCode: String,
+  coinDecimal: 8,
+  contact: String,
+  isSupportAdvanced: String,
+  isSupportMemo: String,
+  mainNetwork: String,
+  noSupportCoin: String
+}
 
 const AccountExchangeComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [from, setFrom] = useState<string>("");
+  const [toOptions, setToOptions] = useState<string[]>([]);
   const [to, setTo] = useState<string>("");
   const [receivingAddress, setReceivingAddress] = useState<string>("");
   const [coins, setCoins] = useState<any[]>([]);
+  const [showLogoGrid, setShowLogoGrid] = useState(false);
 
   let currentUser = useSelector(
     (state: initialState) => state.currentUser
@@ -23,51 +38,32 @@ const AccountExchangeComponent: React.FC = () => {
 
   console.log("currentUser", currentUser);
 
-   useEffect(() => {
-    const getCoinList = async () => {
-      let coinList = await queryCoinList();
-      setCoins(coinList);
-    };
-    getCoinList();
-    
+  useEffect(() => {
+
   }, []);
 
-  const getHeldCoins = (coins: any): any | undefined => {
-    if (coins) {
-      let heldCoins = [];
-      for (let i = 0; i < coins?.data?.length; i++) {
-        console.log('hoisadasda', coins.data[i].isSupportMemo);
-        if (coins.data[i].isSupportMemo == "Y") {
-          heldCoins.push(coins.data[i]);
-        }
-      }
-      console.log(heldCoins);
-      return heldCoins;
-    }
-  }
-
-  getHeldCoins(coins);
-
-
-  const handleFromChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFrom(event.target.value);
-    // try {
-    //   let params = {
-    //     depositCoinCode: "ETH",
-    //     receiveCoinCode: "BNB(BSC)",
-    //   };
-    //   let rateData = await axios.post(
-    //     `https://${host}/api/v1/getBaseInfo`,
-    //     params
-    //   );
-    //   // console.log(rateData);
-    // } catch (error) {
-    //   console.log("handleFromChange ERROR", error);
-    // }
+  const toggleLogoGrid = () => {
+    setShowLogoGrid(!showLogoGrid);
   };
 
-  const handleToChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTo(event.target.value);
+  const handleFromSelectChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    let coinList = await queryCoinList();
+    let coinListValues = coinList.data.map((coin: Coin) => coin.coinAllCode);
+
+    setFrom(value);
+    setToOptions(coinListValues);
+
+    console.log('from', value);
+
+  };
+
+  console.log(from)
+  console.log('coinList', toOptions);
+
+  const handleToSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value;
+    setTo(value);
   };
 
   const handleReceivingAddressChange = (
@@ -114,48 +110,57 @@ const AccountExchangeComponent: React.FC = () => {
         <input
           type="text"
           id="from-input"
-          name="from-input"
-          defaultValue="0.0"
-          onChange={handleFromChange}
+          name="from-input-value"
+          defaultValue={from}
         />
-        <select name="dropdown">
+        <select name="dropdown" value={from} onChange={handleFromSelectChange} className='from-select'>
           <option value="option1"></option>
-          <option value="option2">XRSwan</option>
-          <option value="option3">CygnetX</option>
-          <option value="option3">XRP</option>
+          <option value="XRSwan">XRSwan</option>
+          <option value="CygnetX">CygnetX</option>
+          <option value="XRP">XRP</option>
         </select>
       </div>
       <div style={{ display: "flex" }} className="input">
-        <label htmlFor="from-input" className="input-text">
+        <label htmlFor="to-input" className="input-text">
           To...
         </label>
         <input
           type="text"
-          id="from-input"
-          name="from-input"
-          value="(ESTIMATED RECEIVED) 0.0"
+          id="to-input"
+          name="to-input-value"
+          defaultValue={to}
         />
-        <select name="dropdown">
-          <option value="option1"></option>
-          <option value="option2">XRSwan</option>
-          <option value="option3">CygnetX</option>
-          <option value="option3">XRP</option>
-          <option value="option2">XRSwan</option>
-          <option value="option3">CygnetX</option>
-          <option value="option3">XRP</option>
-          <option value="option2">XRSwan</option>
-          <option value="option3">CygnetX</option>
-          <option value="option3">XRP</option>
-          <option value="option2">XRSwan</option>
-          <option value="option3">CygnetX</option>
-          <option value="option3">XRP</option>
-          <option value="option2">XRSwan</option>
-          <option value="option3">CygnetX</option>
-          <option value="option3">XRP</option>
-          <option value="option2">XRSwan</option>
-          <option value="option3">CygnetX</option>
-          <option value="option3">XRP</option>
-        </select>
+        <p style={{ position: 'relative', right: '50px', width: '29%' }}></p>
+        <button onClick={toggleLogoGrid} style={{ zIndex: 2, position: 'fixed', left: '76%', height: 30 }}>
+          {showLogoGrid ? "Hide" : "Show"} Coins
+        </button>
+        {showLogoGrid && (
+          <div className="logo-grid">
+            <button onClick={toggleLogoGrid} style={{ zIndex: 2, backgroundColor: 'grey', color: 'darkred' }}>
+              {showLogoGrid ? "Hide" : "Show"} Coins
+            </button>
+            {toOptions.map((option, i) => (
+              <div
+                key={i}
+                className="logo-container"
+                onClick={() => {
+                  setTo(option)
+                  toggleLogoGrid()
+                }
+                }
+              >
+                <CoinLogo coinAllCode={option} />
+                {i == 20 ?
+                  <div className='logo-label'>
+                    <p>Standard Token</p>
+                    <p style={{ position: 'relative', bottom: '15%'}}>Protocol</p>
+                  </div> : <div className='logo-label'>{option}</div>
+                }
+              </div>
+            ))}
+          </div>
+        )}
+
       </div>
       <TextField
         id="standard-basic"

@@ -1,5 +1,15 @@
 .navbar {
     background-color: black !important;
+    
+}
+a {
+    text-decoration: none;
+    color: white;
+}
+
+a:hover {
+    color: red;
+    font-weight: bolder;
 }
 
 .logo {
