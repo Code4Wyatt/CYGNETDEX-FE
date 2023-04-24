@@ -1,36 +1,11 @@
-import { useState, useEffect } from "react";
 import "./style.scss";
+import axios from "axios";
+import { useState, useEffect } from "react";
 import cygnetdexlogo from "../../assets/images/logo.png";
 import { TextField } from "@mui/material";
 import { useSelector } from "react-redux";
-import axios from "axios";
-
-interface initialState {
-  currentUser: {
-    user: []
-  }
-
-}
-
-interface AccountExchangeRequest {
-  depositCoinCode: string;
-  receiveCoinCode: string;
-  depositCoinAmt: string;
-  receiveCoinAmt: string;
-  destinationAddr: string;
-  refundAddr: string;
-  equipmentNo: string;
-  sourceType: string;
-  sourceFlag: string;
-  length: number;
-}
-
-interface DataResponse {
-  data: Array<any>;
-  resCode: string;
-  resMsg: string;
-  length: number;
-}
+import { initialState, AccountExchangeRequest, DataResponse } from '../../types/types';
+import queryCoinList from '../../api/queryCoinList';
 
 const AccountExchangeComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -42,39 +17,20 @@ const AccountExchangeComponent: React.FC = () => {
   let currentUser = useSelector(
     (state: initialState) => state.currentUser
   );
+
   let host = process.env.REACT_APP_HOST;
   let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
 
-  console.log("OWERRRR", currentUser);
+  console.log("currentUser", currentUser);
 
-
-  useEffect(() => {
-    const fetchAccountBalances = async () => {
-      try {
-        let params = {
-          "supportType": "advanced",
-          "mainNetwork": "",
-
-        }
-        let heldCoins = [];
-        const response = await axios.post(
-          `${host}/api/v1/queryCoinList`,
-          params
-        );
-        let data = await response.data;
-        setCoins(data);
-
-        console.log('fetchAccountBalances data', data)
-        console.log('fetchAccountBalances coins', coins)
-        return data;
-      } catch (error) {
-        console.error(error);
-        return [];
-      }
+   useEffect(() => {
+    const getCoinList = async () => {
+      let coinList = await queryCoinList();
+      setCoins(coinList);
     };
-
-    fetchAccountBalances();
-  }, [host]);
+    getCoinList();
+    
+  }, []);
 
   const getHeldCoins = (coins: any): any | undefined => {
     if (coins) {
