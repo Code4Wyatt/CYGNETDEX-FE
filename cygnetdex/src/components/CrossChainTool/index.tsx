@@ -136,7 +136,7 @@ const AccountExchangeComponent: React.FC = () => {
         </button>
         {showLogoGrid && (
           <div className="logo-grid">
-            <button onClick={toggleLogoGrid} style={{ zIndex: 2, backgroundColor: 'grey', color: 'darkred' }}>
+            <button onClick={toggleLogoGrid} style={{ zIndex: 2, backgroundColor: 'grey', color: 'lightyellow', fontWeight: 'bold' }}>
               {showLogoGrid ? "Hide" : "Show"} Coins
             </button>
             {toOptions.map((option, i) => (

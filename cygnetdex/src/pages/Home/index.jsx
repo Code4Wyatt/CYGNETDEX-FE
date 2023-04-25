@@ -71,7 +71,7 @@ export const Home = (props) => {
     const intervalId = setInterval(() => {
       fetchXrswanValues();
       fetchXrpValues();
-    }, 5000);
+    }, 1000);
     console.log(xrpValue);
     return () => clearInterval(intervalId);
   }, []);
