@@ -8,6 +8,7 @@ import {
 import Navbar from './components/Navbar';
 import Home from './pages/Home/index';
 import CrossChain from './pages/CrossChain';
+import Wallet from './pages/Wallet';
 function App() {
   return (
     <Router>
@@ -15,6 +16,7 @@ function App() {
       <Routes>
               <Route path='/' element={<Home />} />
               <Route path='/cross-chain' element={<CrossChain />} />
+              <Route path='/wallet' element={<Wallet />} />
       </Routes>
     </Router>
   );

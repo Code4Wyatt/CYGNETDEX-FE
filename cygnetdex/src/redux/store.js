@@ -6,16 +6,21 @@ import { persistStore, persistReducer } from "redux-persist";
 import storage from 'redux-persist/lib/storage';
 import { encryptTransform } from 'redux-persist-transform-encrypt';
 import userReducer from '../redux/reducers/UserReducer'
+import accountReducer from '../redux/reducers/AccountReducer'
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
 export const initialState = {
   currentUser: {
     user: [],
+  },
+  accountDetails: {
+    details: []
   }
 };
 
 const rootReducer = combineReducers({
   currentUser: userReducer,
+  accountDetails: accountReducer
 });
 
 const persistConfig = {
