@@ -20,6 +20,20 @@ interface Coin {
   noSupportCoin: String
 }
 
+type DepositRate = {
+  depositMin: number;
+  depositMax: number;
+};
+
+type ConversionRate = {
+  instantRate: number;
+};
+
+type MinerFee = {
+  minerFee: number;
+  receiveCoinFee: number;
+};
+
 const AccountExchangeComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [from, setFrom] = useState<string>("");
@@ -39,8 +53,10 @@ const AccountExchangeComponent: React.FC = () => {
   console.log("currentUser", currentUser);
 
   useEffect(() => {
+    // Perform getBaseInfo request when to is updated
 
-  }, []);
+
+  }, [to]);
 
   const toggleLogoGrid = () => {
     setShowLogoGrid(!showLogoGrid);
@@ -66,6 +82,23 @@ const AccountExchangeComponent: React.FC = () => {
     setTo(value);
   };
 
+  const actualTo = (
+    depositCoinAmt: number,
+    depositMin: number,
+    depositMax: number,
+    instantRate: number,
+    minerFee: MinerFee
+  ): number => {
+    return (
+      depositCoinAmt -
+      depositCoinAmt *
+      (depositMin / (depositMax - depositMin)) *
+      instantRate -
+      minerFee.minerFee -
+      minerFee.receiveCoinFee
+    );
+  };
+
   const handleReceivingAddressChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -75,27 +108,48 @@ const AccountExchangeComponent: React.FC = () => {
   const handleSubmit = async () => {
     console.log("submitted");
     try {
+      // Calculate the actual exchange amount using the actualTo function
+      const depositCoinAmt = 0.000001; // Replace this with the actual deposit coin amount
+      const depositMin = 1; // Replace this with the actual deposit coin minimum value
+      const depositMax = 100; // Replace this with the actual deposit coin maximum value
+      const instantRate = 1; // Replace this with the actual instant exchange rate
+      const minerFee: MinerFee = {
+        minerFee: 0.001, // Replace this with the actual miner fee value
+        receiveCoinFee: 0.0005, // Replace this with the actual receive coin fee value
+      };
+
+      const actualExchangeAmount = actualTo(
+        depositCoinAmt,
+        depositMin,
+        depositMax,
+        instantRate,
+        minerFee
+      );
+
       const request = await fetch(`https://${host}/api/v2/accountExchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           depositCoinCode: "XRSWAN",
           receiveCoinCode: "XRP",
-          depositCoinAmt: "0.000001",
-          receiveCoinAmt: "1",
+          depositCoinAmt: depositCoinAmt.toString(),
+          receiveCoinAmt: 1,
           destinationAddr: "rPAHeHC5pioxYBUkUtAmnEwe38QEpSF5Lv",
           refundAddr: "rPAHeHC5pioxYBUkUtAmnEwe38QEpSF5Lv",
           equipmentNo: "zfgryh918f93a19fdg6918a68cf5",
           sourceType: "H5",
           sourceFlag: sourceFlag,
+          actualExchangeAmount: actualExchangeAmount, // Add the actual exchange amount to the request body
         }),
       });
+
       const data = await request.json();
       console.log("DATAAAAAAAAAAAA", data);
     } catch (error) {
       console.error(error);
     }
   };
+
 
   return (
     <div className="cross-chain-tool">
@@ -146,14 +200,12 @@ const AccountExchangeComponent: React.FC = () => {
                 onClick={() => {
                   setTo(option)
                   toggleLogoGrid()
-                }
-                }
-              >
+                }}>
                 <CoinLogo coinAllCode={option} />
                 {i == 20 ?
                   <div className='logo-label'>
                     <p>Standard Token</p>
-                    <p style={{ position: 'relative', bottom: '15%'}}>Protocol</p>
+                    <p style={{ position: 'relative', bottom: '15%' }}>Protocol</p>
                   </div> : <div className='logo-label'>{option}</div>
                 }
               </div>
