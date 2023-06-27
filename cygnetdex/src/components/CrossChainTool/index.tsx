@@ -10,14 +10,14 @@ import getBaseInfo from "../../api/getBaseInfo";
 import CoinLogo from '../CoinLogo';
 
 interface Coin {
-  coinAllCode: String,
-  coinCode: String,
-  coinDecimal: 8,
-  contact: String,
-  isSupportAdvanced: String,
-  isSupportMemo: String,
-  mainNetwork: String,
-  noSupportCoin: String
+  coinAllCode: string,
+  coinCode: string,
+  coinDecimal: number,
+  contact: string,
+  isSupportAdvanced: string,
+  isSupportMemo: string,
+  mainNetwork: string,
+  noSupportCoin: string
 }
 
 type DepositRate = {
@@ -37,11 +37,13 @@ type MinerFee = {
 const AccountExchangeComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [from, setFrom] = useState<string>("");
-  const [toOptions, setToOptions] = useState<string[]>([]);
   const [to, setTo] = useState<string>("");
+  const [depositCoinAmt, setDepositCoinAmt] = useState('1');
+  const [toOptions, setToOptions] = useState<string[]>([]);
   const [receivingAddress, setReceivingAddress] = useState<string>("");
   const [coins, setCoins] = useState<any[]>([]);
   const [showLogoGrid, setShowLogoGrid] = useState(false);
+  const [baseInfo, setBaseInfo] = useState<any>(null);
 
   let currentUser = useSelector(
     (state: initialState) => state.currentUser
@@ -51,12 +53,14 @@ const AccountExchangeComponent: React.FC = () => {
   let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
 
   console.log("currentUser", currentUser);
+  console.log("to", to);
+  console.log("from", from);
 
   useEffect(() => {
-    // Perform getBaseInfo request when to is updated
-
-
-  }, [to]);
+    if (depositCoinAmt) {
+      getBaseInfo(from, to, depositCoinAmt);
+    }
+  }, [depositCoinAmt]);
 
   const toggleLogoGrid = () => {
     setShowLogoGrid(!showLogoGrid);
@@ -126,12 +130,12 @@ const AccountExchangeComponent: React.FC = () => {
         minerFee
       );
 
-      const request = await fetch(`https://${host}/api/v2/accountExchange`, {
+      const request = await fetch(`${host}/api/v2/accountExchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          depositCoinCode: "XRSWAN",
-          receiveCoinCode: "XRP",
+          depositCoinCode: from,
+          receiveCoinCode: to,
           depositCoinAmt: depositCoinAmt.toString(),
           receiveCoinAmt: 1,
           destinationAddr: "rPAHeHC5pioxYBUkUtAmnEwe38QEpSF5Lv",
@@ -150,6 +154,12 @@ const AccountExchangeComponent: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (baseInfo) {
+      // Use the baseInfo data to perform further actions or update the state
+      console.log("Base info:", baseInfo);
+    }
+  }, [baseInfo]);
 
   return (
     <div className="cross-chain-tool">
@@ -226,7 +236,7 @@ const AccountExchangeComponent: React.FC = () => {
       <button
         type="submit"
         className="swap-button"
-        onClick={() => handleSubmit}
+        onClick={() => handleSubmit()}
       >
         SWAP NOW
       </button>

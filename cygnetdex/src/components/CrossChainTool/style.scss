@@ -45,14 +45,14 @@
   }
 
   .subtitle {
-    border: 1px solid white;
     width: 150px;
     position: relative;
-    top: 10%;
+    top: 5%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: white;
     margin-bottom: 40px;
+    font-weight: 600;
   }
 
   .input {

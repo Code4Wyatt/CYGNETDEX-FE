@@ -3,15 +3,17 @@ import axios from "axios"
 interface BaseInfoParams {
     depositCoinCode: String
     receiveCoinCode: String
+    depositCoinAmt: String
 }
 
-const getBaseInfo = async (depositCoinCode: String, receiveCoinCode: String) => {
+const getBaseInfo = async (depositCoinCode: String, receiveCoinCode: String, depositCoinAmt: String) => {
     let host = process.env.REACT_APP_HOST
 
     try {
         let params: BaseInfoParams = {
-            "depositCoinCode": depositCoinCode,
-            "receiveCoinCode": receiveCoinCode,
+            "depositCoinCode":"ETH",
+            "receiveCoinCode":"BNB(BSC)",
+            "depositCoinAmt":"1.5"
         }
 
         const response = await axios.post(
