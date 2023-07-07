@@ -36,11 +36,11 @@ type MinerFee = {
 
 const AccountExchangeComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [from, setFrom] = useState<string>("");
-  const [to, setTo] = useState<string>("");
-  const [depositCoinAmt, setDepositCoinAmt] = useState('1');
+  const [from, setFrom] = useState<string>("XRSWAN");
+  const [to, setTo] = useState<string>("ETH");
+  const [depositCoinAmt, setDepositCoinAmt] = useState('0.4');
   const [toOptions, setToOptions] = useState<string[]>([]);
-  const [receivingAddress, setReceivingAddress] = useState<string>("");
+  const [receivingAddress, setReceivingAddress] = useState<string>("r4VjqNGUF6TkopMxS1jP4WgTx1qGmZT49m");
   const [coins, setCoins] = useState<any[]>([]);
   const [showLogoGrid, setShowLogoGrid] = useState(false);
   const [baseInfo, setBaseInfo] = useState<any>(null);
@@ -113,12 +113,12 @@ const AccountExchangeComponent: React.FC = () => {
     console.log("submitted");
     try {
       // Calculate the actual exchange amount using the actualTo function
-      const depositCoinAmt = 0.000001; // Replace this with the actual deposit coin amount
-      const depositMin = 1; // Replace this with the actual deposit coin minimum value
+      const depositCoinAmt = 0.02; // Replace this with the actual deposit coin amount
+      const depositMin = 0.010443; // Replace this with the actual deposit coin minimum value
       const depositMax = 100; // Replace this with the actual deposit coin maximum value
       const instantRate = 1; // Replace this with the actual instant exchange rate
       const minerFee: MinerFee = {
-        minerFee: 0.001, // Replace this with the actual miner fee value
+        minerFee: 1360.136608763748976613, // Replace this with the actual miner fee value
         receiveCoinFee: 0.0005, // Replace this with the actual receive coin fee value
       };
 
@@ -138,8 +138,8 @@ const AccountExchangeComponent: React.FC = () => {
           receiveCoinCode: to,
           depositCoinAmt: depositCoinAmt.toString(),
           receiveCoinAmt: 1,
-          destinationAddr: "rPAHeHC5pioxYBUkUtAmnEwe38QEpSF5Lv",
-          refundAddr: "rPAHeHC5pioxYBUkUtAmnEwe38QEpSF5Lv",
+          destinationAddr: "r4VjqNGUF6TkopMxS1jP4WgTx1qGmZT49m",
+          refundAddr: "r4VjqNGUF6TkopMxS1jP4WgTx1qGmZT49m",
           equipmentNo: "zfgryh918f93a19fdg6918a68cf5",
           sourceType: "H5",
           sourceFlag: sourceFlag,
