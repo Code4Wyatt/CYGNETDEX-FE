@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import { initialState, AccountExchangeRequest, DataResponse } from '../../types/types';
 import queryCoinList from '../../api/queryCoinList';
 import getBaseInfo from "../../api/getBaseInfo";
+import getAccountInfo from '../../api/getAccountInfo';
 import CoinLogo from '../CoinLogo';
 
 interface Coin {
@@ -38,9 +39,9 @@ const AccountExchangeComponent: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [from, setFrom] = useState<string>("XRSWAN");
   const [to, setTo] = useState<string>("ETH");
-  const [depositCoinAmt, setDepositCoinAmt] = useState('0.4');
+  const [depositCoinAmt, setDepositCoinAmt] = useState('1.0');
   const [toOptions, setToOptions] = useState<string[]>([]);
-  const [receivingAddress, setReceivingAddress] = useState<string>("r4VjqNGUF6TkopMxS1jP4WgTx1qGmZT49m");
+  const [receivingAddress, setReceivingAddress] = useState<string>("0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118");
   const [coins, setCoins] = useState<any[]>([]);
   const [showLogoGrid, setShowLogoGrid] = useState(false);
   const [baseInfo, setBaseInfo] = useState<any>(null);
@@ -49,18 +50,41 @@ const AccountExchangeComponent: React.FC = () => {
     (state: initialState) => state.currentUser
   );
 
+  let equipmentNumber = currentUser.user[0].account;
+
+  const getUserAccountInfo = async (equipmentNumber: String) => {
+    let accountInfo = await getAccountInfo(equipmentNumber);
+
+    if (accountInfo !== undefined && accountInfo !== null) {
+      console.log('User Account Info: ', accountInfo);
+      return accountInfo;
+    }
+  }
+  
+
   let host = process.env.REACT_APP_HOST;
   let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
 
-  console.log("currentUser", currentUser);
+  console.log("currentUser", currentUser.user[0].account);
   console.log("to", to);
   console.log("from", from);
 
   useEffect(() => {
+    getUserAccountInfo(equipmentNumber);
+  }, [equipmentNumber]);
+
+  useEffect(() => {
     if (depositCoinAmt) {
-      getBaseInfo(from, to, depositCoinAmt);
+      async function getBaseInfoRequest() {
+        let baseInfo = await getBaseInfo(from, to, depositCoinAmt);
+        baseInfo && setBaseInfo(baseInfo);
+        return baseInfo;
+      }
+      getBaseInfoRequest();
     }
   }, [depositCoinAmt]);
+
+  console.log("baseInfo", baseInfo);
 
   const toggleLogoGrid = () => {
     setShowLogoGrid(!showLogoGrid);
@@ -69,8 +93,11 @@ const AccountExchangeComponent: React.FC = () => {
   const handleFromSelectChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value;
     let coinList = await queryCoinList();
-    let coinListValues = coinList.data.map((coin: Coin) => coin.coinAllCode);
-
+    let coinListValues = coinList.data.map((coin: Coin) => ({
+      coinAllCode: coin.coinAllCode,
+      coinCode: coin.coinCode,
+    }));
+    console.log(coinListValues);
     setFrom(value);
     setToOptions(coinListValues);
 
@@ -78,7 +105,7 @@ const AccountExchangeComponent: React.FC = () => {
 
   };
 
-  console.log(from)
+  console.log(from);
   console.log('coinList', toOptions);
 
   const handleToSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -111,15 +138,27 @@ const AccountExchangeComponent: React.FC = () => {
 
   const handleSubmit = async () => {
     console.log("submitted");
+    console.log('dep min', baseInfo);
+
+    const baseMinerFee = baseInfo?.data.minerFee;
+    const receiveCoinFee = baseInfo?.data.receiveCoinFee;
+
+    let depositMinAmt = baseInfo?.data.depositMin;
+    let depositMaxAmt = baseInfo?.data.depositMax;
+    let instantRateAmt = baseInfo?.data.instantRate;
+
+    console.log("baseMinerFee", baseMinerFee);
+    console.log('receiveCoinFee', receiveCoinFee);
+
     try {
       // Calculate the actual exchange amount using the actualTo function
-      const depositCoinAmt = 0.02; // Replace this with the actual deposit coin amount
-      const depositMin = 0.010443; // Replace this with the actual deposit coin minimum value
-      const depositMax = 100; // Replace this with the actual deposit coin maximum value
-      const instantRate = 1; // Replace this with the actual instant exchange rate
+      const depositCoinAmt = 1.0; // Replace this with the actual deposit coin amount
+      const depositMin = depositMinAmt; 
+      const depositMax = depositMaxAmt; 
+      const instantRate = instantRateAmt; 
       const minerFee: MinerFee = {
-        minerFee: 1360.136608763748976613, // Replace this with the actual miner fee value
-        receiveCoinFee: 0.0005, // Replace this with the actual receive coin fee value
+        minerFee: baseMinerFee ? baseMinerFee : 0, 
+        receiveCoinFee: receiveCoinFee ? receiveCoinFee : 0,
       };
 
       const actualExchangeAmount = actualTo(
@@ -130,6 +169,21 @@ const AccountExchangeComponent: React.FC = () => {
         minerFee
       );
 
+      console.log('actualExchangeAmount', actualExchangeAmount);
+
+      console.log("Request Parameters:", {
+        depositCoinCode: from,
+        receiveCoinCode: to,
+        depositCoinAmt: depositCoinAmt.toString(),
+        receiveCoinAmt: '0.003278',
+        destinationAddr: "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118",
+        refundAddr: equipmentNumber,
+        equipmentNo: equipmentNumber,
+        sourceType: "H5",
+        sourceFlag: sourceFlag,
+        actualExchangeAmount: actualExchangeAmount,
+      });
+
       const request = await fetch(`${host}/api/v2/accountExchange`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -137,13 +191,13 @@ const AccountExchangeComponent: React.FC = () => {
           depositCoinCode: from,
           receiveCoinCode: to,
           depositCoinAmt: depositCoinAmt.toString(),
-          receiveCoinAmt: 1,
-          destinationAddr: "r4VjqNGUF6TkopMxS1jP4WgTx1qGmZT49m",
-          refundAddr: "r4VjqNGUF6TkopMxS1jP4WgTx1qGmZT49m",
-          equipmentNo: "zfgryh918f93a19fdg6918a68cf5",
+          receiveCoinAmt: '0.003278',
+          destinationAddr: "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118",
+          refundAddr: equipmentNumber,
+          equipmentNo: equipmentNumber,
           sourceType: "H5",
           sourceFlag: sourceFlag,
-          actualExchangeAmount: actualExchangeAmount, // Add the actual exchange amount to the request body
+          actualExchangeAmount: actualExchangeAmount,
         }),
       });
 

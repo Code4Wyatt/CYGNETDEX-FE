@@ -11,7 +11,7 @@ const queryCoinList = async () => {
     try {
         let params: QueryCoinListParams = {
             "supportType": "advanced",
-            "mainNetwork": "ETH"
+            "mainNetwork": ""
         }
 
         const response = await axios.post(

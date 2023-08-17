@@ -5,6 +5,7 @@ import ValueBar from "../../components/ValueBar";
 import OptionsPanel from "../../components/OptionsPanel";
 import CryptoChart from "../../components/CryptoChart";
 import ClipLoader from "react-spinners/ClipLoader";
+import getAccountInfo from "../../api/getAccountInfo";
 
 <script
   defer
@@ -19,6 +20,8 @@ export const Home = (props) => {
   const [xrswanTrend, setXrswanTrend] = useState([]);
   const [xrpTrend, setXrpTrend] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // connectToXRP();
 
   const fetchXrswanValues = async () => {
     try {
