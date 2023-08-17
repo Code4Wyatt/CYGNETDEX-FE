@@ -7,6 +7,7 @@ import CryptoChart from "../../components/CryptoChart";
 import ClipLoader from "react-spinners/ClipLoader";
 import getAccountInfo from "../../api/getAccountInfo";
 
+
 <script
   defer
   src="https://www.livecoinwatch.com/static/lcw-widget.js"
@@ -23,6 +24,7 @@ export const Home = (props) => {
   
   // connectToXRP();
 
+
   const fetchXrswanValues = async () => {
     try {
       const xrswanValues = await fetch(
@@ -36,12 +38,10 @@ export const Home = (props) => {
         }
       );
       let response = await xrswanValues.json();
-      console.log("fetchXrswanValues", response);
       setXrswanTitle(response.pairs[0].base.currency);
       setXrswanValue(response.pairs[0].last);
       setXrswanTrend(response.pairs[0].trend);
       setLoading(false);
-      console.log('xrswanValue', xrswanValue);
     } catch (error) {
       console.log('fetchXrswanValues error', error);
     }
@@ -59,7 +59,7 @@ export const Home = (props) => {
         }
       );
       let response = await xrpValues.json();
-      console.log("fetchXrpValues", response);
+
       setXrpTitle(response.pairs[0].base);
       setXrpValue(response.pairs[0].last);
       setXrpTrend(response.pairs[0].trend);
@@ -75,7 +75,6 @@ export const Home = (props) => {
       fetchXrswanValues();
       fetchXrpValues();
     }, 1000);
-    console.log(xrpValue);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -111,6 +110,7 @@ export const Home = (props) => {
                 value={xrswanValue}
                 trend={xrswanTrend}
               />
+              
             ) : (
               "Loading"
             )}
@@ -125,7 +125,7 @@ export const Home = (props) => {
               "Loading"
             )}
             <OptionsPanel />
-              <CryptoChart />
+
              
           </div>
         </>

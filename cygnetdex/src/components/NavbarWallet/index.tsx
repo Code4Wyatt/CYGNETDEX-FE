@@ -135,7 +135,7 @@ function NavbarWallet(props: any) {
         {currentUser.length > 0 ? <p style={{ color: '#72ff26' }}>.</p> : <p style={{ color: '#ff0303' }}>.</p>}
       </div>
       <div className='button' onClick={() => go()}>
-        {currentUser.length > 0 ? 'Wallet Connected' : ' Connect Wallet'}
+        {currentUser.length > 0 ? 'Wallet Connected' : 'Connect with XUMM'}
       </div>
     </div>
   );

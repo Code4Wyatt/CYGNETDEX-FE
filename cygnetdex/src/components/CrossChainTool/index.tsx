@@ -9,6 +9,9 @@ import queryCoinList from '../../api/queryCoinList';
 import getBaseInfo from "../../api/getBaseInfo";
 import getAccountInfo from '../../api/getAccountInfo';
 import CoinLogo from '../CoinLogo';
+import { useAccount, useSendTransaction } from "wagmi";
+import { sendTransaction, prepareSendTransaction } from '@wagmi/core'
+import { parseEther } from 'viem'
 
 interface Coin {
   coinAllCode: string,
@@ -36,21 +39,29 @@ type MinerFee = {
 };
 
 const AccountExchangeComponent: React.FC = () => {
+  const { isConnected } = useAccount();
   const [loading, setLoading] = useState<boolean>(false);
+
   const [from, setFrom] = useState<string>("XRSWAN");
   const [to, setTo] = useState<string>("ETH");
+
   const [depositCoinAmt, setDepositCoinAmt] = useState('1.0');
-  const [toOptions, setToOptions] = useState<string[]>([]);
+
+  const [toOptions, setToOptions] = useState<string[]>([
+  ]);
+
   const [receivingAddress, setReceivingAddress] = useState<string>("0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118");
+
   const [coins, setCoins] = useState<any[]>([]);
   const [showLogoGrid, setShowLogoGrid] = useState(false);
+
   const [baseInfo, setBaseInfo] = useState<any>(null);
 
   let currentUser = useSelector(
     (state: initialState) => state.currentUser
   );
 
-  let equipmentNumber = currentUser.user[0].account;
+  let equipmentNumber = currentUser?.user[0]?.account;
 
   const getUserAccountInfo = async (equipmentNumber: String) => {
     let accountInfo = await getAccountInfo(equipmentNumber);
@@ -60,12 +71,11 @@ const AccountExchangeComponent: React.FC = () => {
       return accountInfo;
     }
   }
-  
 
   let host = process.env.REACT_APP_HOST;
   let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
 
-  console.log("currentUser", currentUser.user[0].account);
+  console.log("currentUser", currentUser?.user[0]?.account);
   console.log("to", to);
   console.log("from", from);
 
@@ -258,6 +268,7 @@ const AccountExchangeComponent: React.FC = () => {
               {showLogoGrid ? "Hide" : "Show"} Coins
             </button>
             {toOptions.map((option, i) => (
+              
               <div
                 key={i}
                 className="logo-container"
@@ -265,13 +276,13 @@ const AccountExchangeComponent: React.FC = () => {
                   setTo(option)
                   toggleLogoGrid()
                 }}>
-                <CoinLogo coinAllCode={option} />
-                {i == 20 ?
+                {/* <CoinLogo coinAllCode={option} /> */}
+               
                   <div className='logo-label'>
                     <p>Standard Token</p>
                     <p style={{ position: 'relative', bottom: '15%' }}>Protocol</p>
                   </div> : <div className='logo-label'>{option}</div>
-                }
+              
               </div>
             ))}
           </div>

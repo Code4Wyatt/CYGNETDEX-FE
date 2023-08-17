@@ -29,14 +29,12 @@ interface InitialState {
 interface BalanceInfo {
     currency: string;
     value: string;
-    // Add more fields as needed
 }
 
 interface AccountInfo {
     account: string;
     balances: BalanceInfo[];
     sequence: number;
-    // Add more fields as needed
 }
 
 
@@ -45,7 +43,7 @@ function BalanceChecker() {
     const dispatch = useDispatch();
 
     const accountAddress = useSelector(
-        (initialState: InitialState) => initialState?.currentUser?.user[0].sub
+        (initialState: InitialState) => initialState?.currentUser?.user[0]?.sub
     );
     const balance = useSelector((initialState: InitialState) => initialState?.accountDetails);
 
