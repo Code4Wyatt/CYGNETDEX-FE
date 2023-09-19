@@ -8,10 +8,19 @@ import { initialState, AccountExchangeRequest, DataResponse } from '../../types/
 import queryCoinList from '../../api/queryCoinList';
 import getBaseInfo from "../../api/getBaseInfo";
 import getAccountInfo from '../../api/getAccountInfo';
+import getAccountCurrencies from "src/api/getAccountCurrencies";
 import CoinLogo from '../CoinLogo';
 import { useAccount, useSendTransaction } from "wagmi";
 import { sendTransaction, prepareSendTransaction } from '@wagmi/core'
 import { parseEther } from 'viem'
+
+interface AccountInfo {
+  // Define the structure of the account info here based on your API response
+  // For example:
+  account: string;
+  balance: number;
+  // Add more fields as needed
+}
 
 interface Coin {
   coinAllCode: string,
@@ -63,25 +72,40 @@ const AccountExchangeComponent: React.FC = () => {
 
   let equipmentNumber = currentUser?.user[0]?.account;
 
-  const getUserAccountInfo = async (equipmentNumber: String) => {
-    let accountInfo = await getAccountInfo(equipmentNumber);
+  const [accountInfo, setAccountInfo] = useState<AccountInfo | null>(null);
 
-    if (accountInfo !== undefined && accountInfo !== null) {
-      console.log('User Account Info: ', accountInfo);
-      return accountInfo;
+  useEffect(() => {
+    try {
+      const accountAddress = equipmentNumber;
+    const fetchData = async () => {
+      const info = await getAccountInfo(accountAddress);
+      setAccountInfo(info);
+      console.log('Account Info: ', accountInfo);
+    };
+
+    fetchData();
+    } catch (error) {
+      console.log(error)
     }
+    
+  }, []);
+
+  const getUserAccountCurrencies = async (equipmentNumber: String) => {
+    try {
+      let accountCurrencies = await getAccountCurrencies(equipmentNumber);
+      console.log('acc curr', accountCurrencies)
+      if (accountCurrencies !== undefined && accountCurrencies !== null) {
+        console.log('User Account Currencies: ', accountCurrencies);
+        return accountCurrencies;
+      }
+    } catch (error) {
+      console.log('getUserAccountCurrencies error', error);
+    }
+   
   }
 
   let host = process.env.REACT_APP_HOST;
   let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
-
-  console.log("currentUser", currentUser?.user[0]?.account);
-  console.log("to", to);
-  console.log("from", from);
-
-  useEffect(() => {
-    getUserAccountInfo(equipmentNumber);
-  }, [equipmentNumber]);
 
   useEffect(() => {
     if (depositCoinAmt) {
@@ -112,7 +136,6 @@ const AccountExchangeComponent: React.FC = () => {
     setToOptions(coinListValues);
 
     console.log('from', value);
-
   };
 
   console.log(from);
@@ -224,6 +247,11 @@ const AccountExchangeComponent: React.FC = () => {
       console.log("Base info:", baseInfo);
     }
   }, [baseInfo]);
+
+  if (currentUser) {
+    console.log('current user', currentUser)
+    console.log('current user equipmentNumber' , equipmentNumber)
+  }
 
   return (
     <div className="cross-chain-tool">
