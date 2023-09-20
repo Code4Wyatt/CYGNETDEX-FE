@@ -14,6 +14,7 @@ import { initialState } from "src/types/types";
 import getAccountInfo from "src/api/getAccountInfo";
 import { useSelector } from "react-redux";
 import getAccountCurrencies from "src/api/getAccountCurrencies";
+import getAccountBalance from "src/api/getAccountBalance";
 
 function Swap(props) {
   const { address, isConnected } = props; // get logged in user address and pass it in as a prop
@@ -34,7 +35,7 @@ function Swap(props) {
   const [from, setFrom] = useState("XRSWAN");
   const [to, setTo] = useState("ETH");
   const [accountCurrencies, setAccountCurrencies] = useState();
-
+  const [userTokensAndBalances, setUserTokensAndBalances] = useState();
   const [depositCoinAmt, setDepositCoinAmt] = useState("1.0");
 
   const [toOptions, setToOptions] = useState([]);
@@ -235,8 +236,14 @@ function Swap(props) {
         setAccountCurrencies(currencies);
       }
 
+      const fetchUserTokensAndBalances = async () => {
+        const tokensAndBalances = await getAccountBalance();
+        setUserTokensAndBalances(tokensAndBalances);
+      }
+
       fetchData();
       fetchAccountCurrencies();
+      fetchUserTokensAndBalances();
     } catch (error) {
       console.log(error);
     }
