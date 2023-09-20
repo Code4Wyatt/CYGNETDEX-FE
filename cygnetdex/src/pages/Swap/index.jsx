@@ -243,7 +243,8 @@ function Swap(props) {
   }, []);
 
   console.log("Account Info: ", accountInfo);
-
+  console.log("Account Currencies: ", accountCurrencies);
+  
   return (
     <>
       {contextHolder}
