@@ -21,6 +21,7 @@ interface PayloadEvent {
 function NavbarWallet(props: any) {
   let dispatch = useDispatch();
   const currentUser = useSelector((state: IUserState) => state.currentUser.user);
+  
   /**
       * Construct & handle async (mobile)
       **/

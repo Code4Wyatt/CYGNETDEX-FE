@@ -15,6 +15,11 @@ import getAccountInfo from "src/api/getAccountInfo";
 import { useSelector } from "react-redux";
 import getAccountCurrencies from "src/api/getAccountCurrencies";
 import getAccountBalance from "src/api/getAccountBalance";
+import convertHexCurrencyToString from "src/utils/convertHexCurrencyToString";
+import { Client, xrpToDrops, dropsToXrp } from "xrpl";
+import getXrplAccountBalance from "src/api/getXrplAccountBalance";
+import './styles.scss';
+
 
 function Swap(props) {
   const { address, isConnected } = props; // get logged in user address and pass it in as a prop
@@ -36,6 +41,7 @@ function Swap(props) {
   const [to, setTo] = useState("ETH");
   const [accountCurrencies, setAccountCurrencies] = useState();
   const [userTokensAndBalances, setUserTokensAndBalances] = useState();
+  const [currenciesHeld, setCurrenciesHeld] = useState();
   const [depositCoinAmt, setDepositCoinAmt] = useState("1.0");
 
   const [toOptions, setToOptions] = useState([]);
@@ -48,6 +54,8 @@ function Swap(props) {
   const [showLogoGrid, setShowLogoGrid] = useState(false);
 
   const [baseInfo, setBaseInfo] = useState(null);
+  const [receiveCurrencies, setReceiveCurrencies] = useState([]);
+  const [sendCurrencies, setSendCurrencies] = useState([]);
 
   const { data, sendTransaction } = useSendTransaction({
     request: {
@@ -130,8 +138,7 @@ function Swap(props) {
     }
 
     const tx = await axios.get(
-      `https://api.1inch.io/v5.0/1/swap?fromTokenAddress=${
-        tokenOne.address
+      `https://api.1inch.io/v5.0/1/swap?fromTokenAddress=${tokenOne.address
       }&toTokenAddress=${tokenTwo.address}&amount=${tokenOneAmount.padEnd(
         tokenOne.decimals + tokenOneAmount.length,
         "0"
@@ -220,7 +227,7 @@ function Swap(props) {
   let currentUser = useSelector((state) => state.currentUser);
 
   let equipmentNumber = currentUser?.user[0]?.account;
-
+  console.log('equp no', equipmentNumber);
   const [accountInfo, setAccountInfo] = useState(null);
 
   useEffect(() => {
@@ -231,27 +238,97 @@ function Swap(props) {
         setAccountInfo(info);
       };
 
+      let receiveCurrencies = []
+
       const fetchAccountCurrencies = async () => {
         const currencies = await getAccountCurrencies(accountAddress);
         setAccountCurrencies(currencies);
+
+        // Create a temporary array to hold the converted currencies
+        const tempReceiveCurrencies = [];
+        const tempSendCurrencies = [];
+
+        for (let i = 0; i < currencies.receiveCurrencies.length; i++) {
+          let currency = currencies.receiveCurrencies[i];
+
+          let convertedCurrency = convertHexCurrencyToString(currency);
+
+          tempReceiveCurrencies.push(convertedCurrency);
+        }
+
+        for (let j = 0; j < currencies.sendCurrencies.length; j++) {
+          let currency = currencies.sendCurrencies[j];
+
+          let convertedCurrency = convertHexCurrencyToString(currency);
+
+          tempSendCurrencies.push(convertedCurrency);
+        }
+
+        // Update the state with the temporary array
+        setReceiveCurrencies([...receiveCurrencies, ...tempReceiveCurrencies]);
+        setSendCurrencies([...receiveCurrencies, ...tempReceiveCurrencies]);
       }
 
-      const fetchUserTokensAndBalances = async () => {
-        const tokensAndBalances = await getAccountBalance();
+      const fetchUserTokensAndBalances = async (accountAddress) => {
+        // const tokensAndBalances = await getAccountBalance();
+
+        // setUserTokensAndBalances(tokensAndBalances);
+
+        let tokensAndBalances = await getXrplAccountBalance(accountAddress);
+        console.log('Tok and Bal', tokensAndBalances);
         setUserTokensAndBalances(tokensAndBalances);
+
+        return tokensAndBalances;
       }
 
       fetchData();
+      fetchUserTokensAndBalances(equipmentNumber);
       fetchAccountCurrencies();
-      fetchUserTokensAndBalances();
     } catch (error) {
       console.log(error);
     }
   }, []);
 
+  // Logging information
+
+
+
+  let balanceInfoToDisplay = [];
+
+  const extractedInformation = [];
+
+  // Iterate through the assets object
+  if (userTokensAndBalances) {
+    for (const account in userTokensAndBalances.assets) {
+      if (userTokensAndBalances.assets.hasOwnProperty(account)) {
+        const accountAssets = userTokensAndBalances.assets[account];
+
+        // Iterate through the assets for each account
+        for (const asset of accountAssets) {
+          const currency = asset.currency;
+          const value = asset.value;
+
+          // Add the extracted information to the array
+          extractedInformation.push({ account, currency, value });
+        }
+      }
+    }
+  }
+
+
+  console.log(extractedInformation);
+
+  // Now, `extractedInformation` contains the extracted data for each item in the `assets` object
+  console.log(extractedInformation);
+
+
   console.log("Account Info: ", accountInfo);
   console.log("Account Currencies: ", accountCurrencies);
-  
+  console.log('Receive Currencies: ', receiveCurrencies);
+  console.log('Send Currencies: ', sendCurrencies);
+  console.log('User Tokens and Balances: ', userTokensAndBalances);
+  console.log('User Tokens and Balances formatted: ', currenciesHeld);
+
   return (
     <>
       {contextHolder}
@@ -279,6 +356,23 @@ function Swap(props) {
           })}
         </div>
       </Modal>
+      <h3 className='balances-title'>Balances</h3>
+      <div className='balances-container'>
+      
+      <div className='balances'>
+        
+        {extractedInformation.map((info, index) => (
+
+          <div className="balance-info">
+            <p key={index}>{convertHexCurrencyToString(info.currency)}</p>
+            <p key={index}>{info.value}</p>
+          </div>
+          
+
+        ))}
+      </div>
+      </div>
+      
       <div className="tradeBoxContainer">
         <div className="tradeBox">
           <div className="tradeBoxHeader">
@@ -297,7 +391,7 @@ function Swap(props) {
               placeholder="0"
               value={tokenOneAmount}
               onChange={handleFromSelectChange}
-              //disabled={!prices}
+            //disabled={!prices}
             />
             <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
             <div className="switchButton" onClick={switchTokens}>

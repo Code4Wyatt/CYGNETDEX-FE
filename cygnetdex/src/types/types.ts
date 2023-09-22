@@ -53,4 +53,10 @@ interface DataResponse {
   length: number;
 }
 
+interface TokenList {
+  ticker: string,
+  img: string,
+  name: string
+}
+
 export type { initialState, Coin, AccountExchangeRequest, DataResponse };
