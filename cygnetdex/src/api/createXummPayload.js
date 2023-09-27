@@ -18,9 +18,6 @@ export default function go_payload(destination, amount) {
         Destination: destination,
         Amount: amount
     }
-
-    console.log('GO PAYLOADS PAYLOAD', payload);
-
     const payload = sdk.payload.create(request, true);
 
     console.log('payload PAYLOAD', payload)

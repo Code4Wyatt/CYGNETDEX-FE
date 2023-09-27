@@ -24,6 +24,7 @@ import calculateExpectedReceivedQuantity from "src/utils/calculateExpectedReceiv
 import './styles.scss';
 import actualTo from "src/api/getExhangeAmount";
 import { TextField } from "@mui/material";
+import createXummSwap from "src/api/createXummSwap";
 
 // Now need to via the Swap button, initialise a function that creates an order on the SWFT API, 
 // with the returnAddr in the returned parameters, we will trigger a payload using the XUMM API
@@ -197,8 +198,8 @@ function Swap(props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          depositCoinCode: from,
-          receiveCoinCode: to,
+          depositCoinCode: tokenOne.ticker,
+          receiveCoinCode: tokenTwo.ticker,
           depositCoinAmt: parseFloat(tokenOneAmount),
           receiveCoinAmt: expectedReceiveQuantity,
           destinationAddr: "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118",
@@ -212,10 +213,10 @@ function Swap(props) {
 
       const data = await request.json();
       console.log("DATAAAAAAAAAAAA", data);
-
+      console.log('plat addr', data.data.platformAddr);
       if (data.resCode === '800') {
 
-        createXummPayload(data.data.platformAddr, tokenOneAmount);
+        createXummSwap(data.data.platformAddr, tokenOneAmount);
       }
     } catch (error) {
       console.error(error);

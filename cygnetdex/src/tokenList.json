@@ -35,9 +35,9 @@
         "decimals": 18
     },
     {
-        "ticker": "WETH",
+        "ticker": "WXRP",
         "img": "https://cdn.moralis.io/eth/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2.png",
-        "name": "Wrapped Ethereum",
+        "name": "Wrapped XRP",
         "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
         "decimals": 18
     },
