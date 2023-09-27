@@ -14,22 +14,31 @@ import { initialState } from "src/types/types";
 import getAccountInfo from "src/api/getAccountInfo";
 import { useSelector } from "react-redux";
 import getAccountCurrencies from "src/api/getAccountCurrencies";
+import createXummPayload from "src/api/createXummPayload";
 import getAccountBalance from "src/api/getAccountBalance";
 import convertHexCurrencyToString from "src/utils/convertHexCurrencyToString";
 import { Client, xrpToDrops, dropsToXrp } from "xrpl";
 import getXrplAccountBalance from "src/api/getXrplAccountBalance";
+import filterTokensByUserCoinsHeld from "src/utils/filterTokensByUserCoinsHeld";
+import calculateExpectedReceivedQuantity from "src/utils/calculateExpectedReceivedQuantity";
 import './styles.scss';
+import actualTo from "src/api/getExhangeAmount";
+import { TextField } from "@mui/material";
 
+// Now need to via the Swap button, initialise a function that creates an order on the SWFT API, 
+// with the returnAddr in the returned parameters, we will trigger a payload using the XUMM API
+// this will trigger a push notification on their application to authorise the payment
 
 function Swap(props) {
   const { address, isConnected } = props; // get logged in user address and pass it in as a prop
   const [messageApi, contextHolder] = message.useMessage();
   const [slippage, setSlippage] = useState(2.5);
-  const [tokenOneAmount, setTokenOneAmount] = useState(null);
-  const [tokenTwoAmount, setTokenTwoAmount] = useState(null);
+  const [tokenOneAmount, setTokenOneAmount] = useState('');
+  const [tokenTwoAmount, setTokenTwoAmount] = useState(0);
   const [tokenOne, setTokenOne] = useState(tokenList[0]);
   const [tokenTwo, setTokenTwo] = useState(tokenList[1]);
   const [isOpen, setIsOpen] = useState(false);
+  const [modalTwoOpen, setModalTwoOpen] = useState(false);
   const [changeToken, setChangeToken] = useState(1);
   const [prices, setPrices] = useState(null);
   const [txDetails, setTxDetails] = useState({
@@ -39,15 +48,17 @@ function Swap(props) {
   });
   const [from, setFrom] = useState("XRSWAN");
   const [to, setTo] = useState("ETH");
+  const [accountInfo, setAccountInfo] = useState(null);
   const [accountCurrencies, setAccountCurrencies] = useState();
   const [userTokensAndBalances, setUserTokensAndBalances] = useState();
+  const [expectedReceiveQuantity, setExpectedReceiveQuantity] = useState(0);
   const [currenciesHeld, setCurrenciesHeld] = useState();
   const [depositCoinAmt, setDepositCoinAmt] = useState("1.0");
 
   const [toOptions, setToOptions] = useState([]);
-
+  // 0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118
   const [receivingAddress, setReceivingAddress] = useState(
-    "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118"
+    ""
   );
 
   const [coins, setCoins] = useState([]);
@@ -69,6 +80,9 @@ function Swap(props) {
   const { isLoading, isSuccess } = useWaitForTransaction({
     hash: data?.hash,
   });
+
+  let host = process.env.REACT_APP_HOST;
+  let sourceFlag = process.env.REACT_APP_SOURCE_FLAG;
 
   function handleSlippageChange(e) {
     setSlippage(e.target.value);
@@ -92,7 +106,7 @@ function Swap(props) {
     const two = tokenTwo;
     setTokenOne(two);
     setTokenTwo(one);
-    fetchPrices(two.address, one.address);
+    // fetchPrices(two.address, one.address);
   }
 
   function openModal(asset) {
@@ -100,18 +114,23 @@ function Swap(props) {
     setIsOpen(true);
   }
 
-  function modifyToken(i) {
+  function openModalTwo(asset) {
+    setChangeToken(asset);
+    setModalTwoOpen(true);
+  }
+
+  function modifyToken(i, modal) {
     setPrices(null);
     setTokenOneAmount(null);
     setTokenTwoAmount(null);
-    if (changeToken === 1) {
-      setTokenOne(tokenList[i]);
-      fetchPrices(tokenList[i].address, tokenTwo.address);
-    } else {
+
+    if (modal === 'first') {
+      setTokenOne(displayTokens[i]);
+      setIsOpen(false);
+    } else if (modal === 'second') {
       setTokenTwo(tokenList[i]);
-      fetchPrices(tokenOne.address, tokenList[i].address);
+      setModalTwoOpen(false);
     }
-    setIsOpen(false);
   }
 
   async function fetchPrices(one, two) {
@@ -123,33 +142,85 @@ function Swap(props) {
   }
 
   async function fetchDexSwap() {
-    const allowance = await axios.get(
-      `https://api.1inch.io/v5.0/1/approve/allowance?tokenAddress=${tokenOne.address}&walletAddress=${address}`
-    );
+    // 
+  }
 
-    if (allowance.data.allowance === "0") {
-      const approve = await axios.get(
-        `https://api.1inch.io/v5.0/1/approve/transaction?tokenAddress=${tokenOne.address}`
+  const handleSubmit = async () => {
+    console.log("submitted");
+    console.log('dep min', baseInfo);
+
+    const baseMinerFee = baseInfo?.minerFee;
+    const receiveCoinFee = baseInfo?.receiveCoinFee;
+
+    let depositMinAmt = baseInfo?.depositMin;
+    let depositMaxAmt = baseInfo?.depositMax;
+    let instantRateAmt = baseInfo?.instantRate;
+
+    console.log("baseMinerFee", baseMinerFee);
+    console.log('receiveCoinFee', receiveCoinFee);
+
+    try {
+      // Calculate the actual exchange amount using the actualTo function
+      const depositCoinAmt = 1.0; // Replace this with the actual deposit coin amount
+      const depositMin = depositMinAmt;
+      const depositMax = depositMaxAmt;
+      const instantRate = instantRateAmt;
+      const minerFee = {
+        minerFee: baseMinerFee ? baseMinerFee : 0,
+        receiveCoinFee: receiveCoinFee ? receiveCoinFee : 0,
+      };
+
+      const actualExchangeAmount = actualTo(
+        depositCoinAmt,
+        depositMin,
+        depositMax,
+        instantRate,
+        minerFee
       );
 
-      setTxDetails(approve.data);
-      console.log("not approved");
-      return;
+      console.log('actualExchangeAmount', actualExchangeAmount);
+
+      console.log("Request Parameters:", {
+        depositCoinCode: tokenOne.ticker,
+        receiveCoinCode: tokenTwo.ticker,
+        depositCoinAmt: tokenOneAmount,
+        receiveCoinAmt: expectedReceiveQuantity,
+        destinationAddr: "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118",
+        refundAddr: equipmentNumber,
+        equipmentNo: equipmentNumber,
+        sourceType: "H5",
+        sourceFlag: sourceFlag,
+        actualExchangeAmount: actualExchangeAmount,
+      });
+
+      const request = await fetch(`${host}/api/v2/accountExchange`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          depositCoinCode: from,
+          receiveCoinCode: to,
+          depositCoinAmt: parseFloat(tokenOneAmount),
+          receiveCoinAmt: expectedReceiveQuantity,
+          destinationAddr: "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118",
+          refundAddr: equipmentNumber,
+          equipmentNo: equipmentNumber,
+          sourceType: "H5",
+          sourceFlag: sourceFlag,
+          actualExchangeAmount: actualExchangeAmount,
+        }),
+      });
+
+      const data = await request.json();
+      console.log("DATAAAAAAAAAAAA", data);
+
+      if (data.resCode === '800') {
+
+        createXummPayload(data.data.platformAddr, tokenOneAmount);
+      }
+    } catch (error) {
+      console.error(error);
     }
-
-    const tx = await axios.get(
-      `https://api.1inch.io/v5.0/1/swap?fromTokenAddress=${tokenOne.address
-      }&toTokenAddress=${tokenTwo.address}&amount=${tokenOneAmount.padEnd(
-        tokenOne.decimals + tokenOneAmount.length,
-        "0"
-      )}&fromAddress=${address}&slippage=${slippage}`
-    );
-
-    let decimals = Number(`1E${tokenTwo.decimals}`);
-    setTokenTwoAmount((Number(tx.data.toTokenAmount) / decimals).toFixed(2));
-
-    setTxDetails(tx.data.tx);
-  }
+  };
 
   // useEffect(async ()=>{
   //   console.log(tokenList[0].address, tokenList[1].address)
@@ -198,17 +269,7 @@ function Swap(props) {
   // },[isSuccess])
 
   const handleFromSelectChange = async (event) => {
-    const value = event.target.value;
-    let coinList = await queryCoinList();
-    let coinListValues = coinList.data.map((coin) => ({
-      coinAllCode: coin.coinAllCode,
-      coinCode: coin.coinCode,
-    }));
-    console.log(coinListValues);
-    setFrom(value);
-    setToOptions(coinListValues);
-
-    console.log("from", value);
+    setTokenOneAmount(event.target.value);
   };
 
   const settings = (
@@ -227,73 +288,44 @@ function Swap(props) {
   let currentUser = useSelector((state) => state.currentUser);
 
   let equipmentNumber = currentUser?.user[0]?.account;
-  console.log('equp no', equipmentNumber);
-  const [accountInfo, setAccountInfo] = useState(null);
+  console.log('equipmentNumber', equipmentNumber);
 
   useEffect(() => {
     try {
       const accountAddress = equipmentNumber;
+
       const fetchData = async () => {
-        const info = await getAccountInfo(accountAddress);
-        setAccountInfo(info);
-      };
+        const [info, tokensAndBalances, currencies] = await Promise.all([
+          getAccountInfo(accountAddress),
+          getXrplAccountBalance(accountAddress),
+          getAccountCurrencies(accountAddress)
+        ]);
 
-      let receiveCurrencies = []
-
-      const fetchAccountCurrencies = async () => {
-        const currencies = await getAccountCurrencies(accountAddress);
-        setAccountCurrencies(currencies);
-
-        // Create a temporary array to hold the converted currencies
+        // Process receive and send currencies
         const tempReceiveCurrencies = [];
         const tempSendCurrencies = [];
 
-        for (let i = 0; i < currencies.receiveCurrencies.length; i++) {
-          let currency = currencies.receiveCurrencies[i];
-
-          let convertedCurrency = convertHexCurrencyToString(currency);
-
-          tempReceiveCurrencies.push(convertedCurrency);
+        for (let currency of currencies.receiveCurrencies) {
+          tempReceiveCurrencies.push(convertHexCurrencyToString(currency));
         }
 
-        for (let j = 0; j < currencies.sendCurrencies.length; j++) {
-          let currency = currencies.sendCurrencies[j];
-
-          let convertedCurrency = convertHexCurrencyToString(currency);
-
-          tempSendCurrencies.push(convertedCurrency);
+        for (let currency of currencies.sendCurrencies) {
+          tempSendCurrencies.push(convertHexCurrencyToString(currency));
         }
 
-        // Update the state with the temporary array
+        // Now update the states together to minimize renders
+        setAccountInfo(info);
+        setUserTokensAndBalances(tokensAndBalances);
+        setAccountCurrencies(currencies);
         setReceiveCurrencies([...receiveCurrencies, ...tempReceiveCurrencies]);
         setSendCurrencies([...receiveCurrencies, ...tempReceiveCurrencies]);
-      }
-
-      const fetchUserTokensAndBalances = async (accountAddress) => {
-        // const tokensAndBalances = await getAccountBalance();
-
-        // setUserTokensAndBalances(tokensAndBalances);
-
-        let tokensAndBalances = await getXrplAccountBalance(accountAddress);
-        console.log('Tok and Bal', tokensAndBalances);
-        setUserTokensAndBalances(tokensAndBalances);
-
-        return tokensAndBalances;
-      }
+      };
 
       fetchData();
-      fetchUserTokensAndBalances(equipmentNumber);
-      fetchAccountCurrencies();
     } catch (error) {
       console.log(error);
     }
-  }, []);
-
-  // Logging information
-
-
-
-  let balanceInfoToDisplay = [];
+  }, [equipmentNumber]);
 
   const extractedInformation = [];
 
@@ -314,20 +346,48 @@ function Swap(props) {
       }
     }
   }
+  console.log('tokenOne', tokenOne)
+  const displayTokens = filterTokensByUserCoinsHeld(tokenList, sendCurrencies);
+  const updatedTokenList = tokenList.filter(token => token.ticker !== tokenOne.ticker);
 
+  useEffect(() => {
+    const fetchBaseInfo = async () => {
+      if (tokenOne && tokenTwo && tokenOneAmount > 0) {
+        try {
+          // Wait for the promise to resolve using await
+          const info = await getBaseInfo(tokenOne.ticker, tokenTwo.ticker, tokenOneAmount);
+          setBaseInfo(info.data);
+          let receiveQuantity = calculateExpectedReceivedQuantity(tokenOneAmount, baseInfo);
+          console.log('INFO', receiveQuantity);
+          setExpectedReceiveQuantity(receiveQuantity);
+        } catch (error) {
+          console.error("Failed to get base info:", error);
+        }
+      }
+    };
 
-  console.log(extractedInformation);
+    // Call the async function
+    fetchBaseInfo();
+  }, [tokenOne, tokenTwo, tokenOneAmount]);
 
-  // Now, `extractedInformation` contains the extracted data for each item in the `assets` object
-  console.log(extractedInformation);
+  const roundedExpectedQuantity = parseFloat(expectedReceiveQuantity.toFixed(6));
 
+  const handleReceivingAddressChange = (
+    event
+  ) => {
+    setReceivingAddress(event.target.value);
+  };
+  console.log('RECEIVE', expectedReceiveQuantity);
 
+  console.group('User Account Information')
   console.log("Account Info: ", accountInfo);
   console.log("Account Currencies: ", accountCurrencies);
   console.log('Receive Currencies: ', receiveCurrencies);
   console.log('Send Currencies: ', sendCurrencies);
   console.log('User Tokens and Balances: ', userTokensAndBalances);
-  console.log('User Tokens and Balances formatted: ', currenciesHeld);
+  console.log('Base Info: ', baseInfo);
+  console.log('Receiving Address: ', receivingAddress);
+  console.groupEnd();
 
   return (
     <>
@@ -339,12 +399,36 @@ function Swap(props) {
         title="Select a token"
       >
         <div className="modalContent">
-          {tokenList?.map((e, i) => {
+          {displayTokens?.map((e, i) => {
             return (
               <div
                 className="tokenChoice"
                 key={i}
-                onClick={() => modifyToken(i)}
+                onClick={() => modifyToken(i, 'first')}
+              >
+                <img src={e.img} alt={e.ticker} className="tokenLogo" />
+                <div className="tokenChoiceNames">
+                  <div className="tokenName">{e.name}</div>
+                  <div className="tokenTicker">{e.ticker}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Modal>
+      <Modal
+        open={modalTwoOpen}
+        footer={null}
+        onCancel={() => setModalTwoOpen(false)}
+        title="Select a token"
+      >
+        <div className="modalContent">
+          {updatedTokenList?.map((e, i) => {
+            return (
+              <div
+                className="tokenChoice"
+                key={i}
+                onClick={() => modifyToken(i, 'second')}
               >
                 <img src={e.img} alt={e.ticker} className="tokenLogo" />
                 <div className="tokenChoiceNames">
@@ -358,21 +442,18 @@ function Swap(props) {
       </Modal>
       <h3 className='balances-title'>Balances</h3>
       <div className='balances-container'>
-      
-      <div className='balances'>
-        
-        {extractedInformation.map((info, index) => (
+        <div className='balances'>
+          {extractedInformation.map((info, index) => (
 
-          <div className="balance-info">
-            <p key={index}>{convertHexCurrencyToString(info.currency)}</p>
-            <p key={index}>{info.value}</p>
-          </div>
-          
+            <div className="balance-info" key={index}>
+              <p>{convertHexCurrencyToString(info.currency)}</p>
+              <p>{info.value}</p>
+            </div>
 
-        ))}
+          ))}
+        </div>
       </div>
-      </div>
-      
+
       <div className="tradeBoxContainer">
         <div className="tradeBox">
           <div className="tradeBoxHeader">
@@ -393,20 +474,20 @@ function Swap(props) {
               onChange={handleFromSelectChange}
             //disabled={!prices}
             />
-            <Input placeholder="0" value={tokenTwoAmount} disabled={true} />
+            <Input placeholder="0" value={roundedExpectedQuantity} disabled={true} />
             <div className="switchButton" onClick={switchTokens}>
               <ArrowDownOutlined className="switchArrow" rev={undefined} />
             </div>
             <div className="assetOne" onClick={() => openModal(1)}>
               <img
-                src={tokenOne.img}
+                src={displayTokens[0]?.img}
                 alt="assetOneLogo"
                 className="assetLogo"
               />
-              {tokenOne.ticker}
+              {displayTokens[0]?.ticker}
               <DownOutlined rev={undefined} />
             </div>
-            <div className="assetTwo" onClick={() => openModal(2)}>
+            <div className="assetTwo" onClick={() => openModalTwo(2)}>
               <img
                 src={tokenTwo.img}
                 alt="assetOneLogo"
@@ -416,10 +497,41 @@ function Swap(props) {
               <DownOutlined rev={undefined} />
             </div>
           </div>
+          {baseInfo ? (
+            <div className="baseInfoSection">
+              <div className="infoItem">
+                <p style={{ flex: 'start' }}>Estimated Rate:</p>
+                <p style={{ flex: 'end' }}>{baseInfo.instantRate} {tokenTwo.ticker}</p>
+              </div>
+              <div className="infoItem">
+                <p style={{ flex: 'start' }}>Service Fee:</p>
+                <p style={{ flex: 'end' }}>{baseInfo.depositCoinFeeRate} %</p>
+              </div>
+              <div className="infoItem">
+                <p style={{ flex: 'start' }}>Relayer Service Fee:</p>
+                <p style={{ flex: 'end' }}>{baseInfo.chainFee} {tokenTwo.ticker}</p>
+              </div>
+              {setExpectedReceiveQuantity ? <div className="receiveItem">
+                <p style={{ flex: 'start' }}>You Will Receive:</p>
+                <p style={{ flex: 'end' }}>{roundedExpectedQuantity} {tokenTwo.ticker}</p>
+              </div> : null}
+
+            </div>
+          ) : null}
+          <TextField
+            id="standard-basic"
+            label="Receiving Address"
+            variant="standard"
+            className="receiving"
+            value={receivingAddress}
+            onChange={handleReceivingAddressChange}
+          />
+          <p>*NOTE: PLEASE USE NON-EXCHANGE ADDRESSES ONLY*</p>
+
           <div
             className="swapButton"
             disabled={!tokenOneAmount}
-            onClick={fetchDexSwap}
+            onClick={handleSubmit}
           >
             Swap
           </div>

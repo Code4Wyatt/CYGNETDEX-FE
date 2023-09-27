@@ -65,7 +65,7 @@ function NavbarWallet(props: any) {
       .authorize()?.then(authorized => {
         // Assign to global, please don't do this but for the sake of the demo it's easy
         sdk = authorized?.sdk
-
+        console.log('SDK', sdk);
         console.log('Authorized', /* authorized.jwt, */ authorized?.me)
         dispatch(addCurrentUserAction(authorized?.me))
         // signinbtn.style.display = 'none'

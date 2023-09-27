@@ -21,7 +21,9 @@ const getBaseInfo = async (depositCoinCode: String, receiveCoinCode: String, dep
             "receiveCoinCode": receiveCoinCode,
             "depositCoinAmt": depositCoinAmt
         }
-
+  
+        console.log('getBaseInfo params: ', params);
+        
         const response = await axios.post(
             `${host}/api/v1/getBaseInfo`,
             params,

@@ -1,4 +1,4 @@
-import { ADD_CURRENT_USER, REMOVE_CURRENT_USER } from '../actions/UserAction'
+import { ADD_CURRENT_USER, REMOVE_CURRENT_USER, ADD_SDK, REMOVE_SDK } from '../actions/UserAction'
 import { initialState } from '../store'
 
 export default function favouriteReducer(state = initialState.currentUser, action) {
@@ -7,17 +7,17 @@ export default function favouriteReducer(state = initialState.currentUser, actio
     const { type, payload } = action;
 
     switch (type) {
-        case ADD_CURRENT_USER: 
-            return { 
+        case ADD_CURRENT_USER:
+            return {
                 ...state,
-                user: [ payload ],
+                user: [payload],
             }
         case REMOVE_CURRENT_USER:
             return {
                 ...state,
                 user: state.user.filter((user) => user[0] !== payload),
             };
-        default: 
+        default:
             return state;
     }
 }

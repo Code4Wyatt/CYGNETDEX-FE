@@ -11,8 +11,6 @@
     align-items: center;
     justify-content: center;
   }
-
-  
   
   .balances {
     display: flex;
@@ -33,6 +31,7 @@
     .balance-info {
         display: flex;
     }
+
     p:first-of-type {
       background-color: #f0f0f021;
       color: white;
@@ -49,4 +48,30 @@
       border: 1px solid #ccc;
     }
   }
+
+  .baseInfoSection {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    color: white;
+  }
   
+  .infoItem {
+    display: flex;
+    justify-content: space-between;  /* This ensures that the first p tag aligns to the start and the second to the end */
+    align-items: center;
+  }
+  
+  .receiveItem {
+    display: flex;
+    justify-content: space-between;  /* This ensures that the first p tag aligns to the start and the second to the end */
+    align-items: center;
+  }
+  
+  .infoItem p {
+    margin: 0; /* This removes any default margins from the p tags, you can adjust if necessary */
+  }
+  
+  .receiving {
+    width: 100%;
+  }
