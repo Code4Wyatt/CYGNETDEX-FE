@@ -26,9 +26,7 @@ import actualTo from "src/api/getExhangeAmount";
 import { TextField } from "@mui/material";
 import createXummSwap from "src/api/createXummSwap";
 
-// Now need to via the Swap button, initialise a function that creates an order on the SWFT API, 
-// with the returnAddr in the returned parameters, we will trigger a payload using the XUMM API
-// this will trigger a push notification on their application to authorise the payment
+// Now need to implement queryCoinList (and check this is used to verify which coins can be traded from a certain coin), and populate the from list with that
 
 function Swap(props) {
   const { address, isConnected } = props; // get logged in user address and pass it in as a prop

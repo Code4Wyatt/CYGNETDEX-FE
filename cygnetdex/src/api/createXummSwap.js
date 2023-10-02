@@ -3,7 +3,7 @@ async function createXummSwap(destinationWithMaybeTag, amount) {
     console.log('createXummSwap params', {destination, amount, destinationTag})
     
     try {
-      const response = await fetch('http://localhost:3001/xumm/swap', {
+      const response = await fetch('http://localhost:3001/xumm/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ async function createXummSwap(destinationWithMaybeTag, amount) {
       });
   
       if (!response.ok) {
-        throw new Error('Failed to create swap.');
+        throw new Error('Failed to create swap.', response);
       }
   
       return await response.json();
