@@ -1,5 +1,5 @@
 export default function calculateExpectedReceivedQuantity(depositAmt: string, baseInfo: any) {
-    console.log('calculateExpectedReceivedQuantity baseInfo', baseInfo);
+    console.log('calculateExpectedReceivedQuantity baseInfo', {depositAmt, baseInfo});
 
     const depositCoinAmt = parseFloat(depositAmt);
     console.log('depositCoinAmt:', depositCoinAmt);

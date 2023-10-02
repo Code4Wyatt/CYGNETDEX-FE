@@ -21,10 +21,13 @@ import { Client, xrpToDrops, dropsToXrp } from "xrpl";
 import getXrplAccountBalance from "src/api/getXrplAccountBalance";
 import filterTokensByUserCoinsHeld from "src/utils/filterTokensByUserCoinsHeld";
 import calculateExpectedReceivedQuantity from "src/utils/calculateExpectedReceivedQuantity";
+import getUnsupportedCoins from 'src/utils/getUnsupportedSwapCoins';
 import './styles.scss';
 import actualTo from "src/api/getExhangeAmount";
 import { TextField } from "@mui/material";
 import createXummSwap from "src/api/createXummSwap";
+import filterTokensByUnsupportedCoins from "src/utils/filterTokensByUnsupportedSwapCoins";
+import CoinLogo from "src/components/CoinLogo";
 
 // Now need to implement queryCoinList (and check this is used to verify which coins can be traded from a certain coin), and populate the from list with that
 
@@ -45,15 +48,13 @@ function Swap(props) {
     data: null,
     value: null,
   });
-  const [from, setFrom] = useState("XRSWAN");
-  const [to, setTo] = useState("ETH");
   const [accountInfo, setAccountInfo] = useState(null);
   const [accountCurrencies, setAccountCurrencies] = useState();
   const [userTokensAndBalances, setUserTokensAndBalances] = useState();
   const [expectedReceiveQuantity, setExpectedReceiveQuantity] = useState(0);
   const [currenciesHeld, setCurrenciesHeld] = useState();
   const [depositCoinAmt, setDepositCoinAmt] = useState("1.0");
-
+  const [coinList, setCoinList] = useState([]);
   const [toOptions, setToOptions] = useState([]);
   // 0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118
   const [receivingAddress, setReceivingAddress] = useState(
@@ -66,7 +67,7 @@ function Swap(props) {
   const [baseInfo, setBaseInfo] = useState(null);
   const [receiveCurrencies, setReceiveCurrencies] = useState([]);
   const [sendCurrencies, setSendCurrencies] = useState([]);
-
+  const [supportedCoins, setSupportedCoins] = useState([]);
   const { data, sendTransaction } = useSendTransaction({
     request: {
       from: address,
@@ -125,9 +126,15 @@ function Swap(props) {
 
     if (modal === 'first') {
       setTokenOne(displayTokens[i]);
+      console.log('COIN LIST', coinList)
+      let unsupportedCoins = getUnsupportedCoins(displayTokens[i], coinList);
+      console.log('Unsupported Coins', unsupportedCoins);
+      const supportedCoins = filterTokensByUnsupportedCoins(coinList, unsupportedCoins);
+      console.log('supportedCoins', supportedCoins);
+      setSupportedCoins(supportedCoins);
       setIsOpen(false);
     } else if (modal === 'second') {
-      setTokenTwo(tokenList[i]);
+      setTokenTwo(supportedCoins[i]);
       setModalTwoOpen(false);
     }
   }
@@ -181,10 +188,10 @@ function Swap(props) {
 
       console.log("Request Parameters:", {
         depositCoinCode: tokenOne.ticker,
-        receiveCoinCode: tokenTwo.ticker,
+        receiveCoinCode: tokenTwo.coinCode,
         depositCoinAmt: tokenOneAmount,
         receiveCoinAmt: expectedReceiveQuantity,
-        destinationAddr: "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118",
+        destinationAddr: receivingAddress,
         refundAddr: equipmentNumber,
         equipmentNo: equipmentNumber,
         sourceType: "H5",
@@ -197,10 +204,10 @@ function Swap(props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           depositCoinCode: tokenOne.ticker,
-          receiveCoinCode: tokenTwo.ticker,
+          receiveCoinCode: tokenTwo.coinCode,
           depositCoinAmt: parseFloat(tokenOneAmount),
           receiveCoinAmt: expectedReceiveQuantity,
-          destinationAddr: "0x2Fef78405Ef60fC4f1A18f1C6838f8149d970118",
+          destinationAddr: receivingAddress,
           refundAddr: equipmentNumber,
           equipmentNo: equipmentNumber,
           sourceType: "H5",
@@ -220,52 +227,6 @@ function Swap(props) {
       console.error(error);
     }
   };
-
-  // useEffect(async ()=>{
-  //   console.log(tokenList[0].address, tokenList[1].address)
-  //   let pricesResult = await fetchPrices(tokenList[0].address, tokenList[1].address)
-
-  //   console.log('pricesResult', pricesResult)
-  // }, [])
-
-  // useEffect(()=>{
-
-  //     if(txDetails.to && isConnected){
-  //       sendTransaction();
-  //     }
-  // }, [txDetails])
-
-  // useEffect(()=>{
-
-  //   messageApi.destroy();
-
-  //   if(isLoading){
-  //     messageApi.open({
-  //       type: 'loading',
-  //       content: 'Transaction is Pending...',
-  //       duration: 0,
-  //     })
-  //   }
-
-  // },[isLoading])
-
-  // useEffect(()=>{
-  //   messageApi.destroy();
-  //   if(isSuccess){
-  //     messageApi.open({
-  //       type: 'success',
-  //       content: 'Transaction Successful',
-  //       duration: 1.5,
-  //     })
-  //   }else if(txDetails.to){
-  //     messageApi.open({
-  //       type: 'error',
-  //       content: 'Transaction Failed',
-  //       duration: 1.50,
-  //     })
-  //   }
-
-  // },[isSuccess])
 
   const handleFromSelectChange = async (event) => {
     setTokenOneAmount(event.target.value);
@@ -320,6 +281,16 @@ function Swap(props) {
         setSendCurrencies([...receiveCurrencies, ...tempReceiveCurrencies]);
       };
 
+      const fetchCoinList = async () => {
+        try {
+            const coins = await queryCoinList();
+            setCoinList(coins.data);
+        } catch (error) {
+            console.error("Failed to fetch coin list:", error);
+        }
+    };
+
+      fetchCoinList();
       fetchData();
     } catch (error) {
       console.log(error);
@@ -346,6 +317,7 @@ function Swap(props) {
     }
   }
   console.log('tokenOne', tokenOne)
+  
   const displayTokens = filterTokensByUserCoinsHeld(tokenList, sendCurrencies);
   const updatedTokenList = tokenList.filter(token => token.ticker !== tokenOne.ticker);
 
@@ -354,9 +326,9 @@ function Swap(props) {
       if (tokenOne && tokenTwo && tokenOneAmount > 0) {
         try {
           // Wait for the promise to resolve using await
-          const info = await getBaseInfo(tokenOne.ticker, tokenTwo.ticker, tokenOneAmount);
+          const info = await getBaseInfo(tokenOne.ticker, tokenTwo.coinCode, tokenOneAmount);
           setBaseInfo(info.data);
-          let receiveQuantity = calculateExpectedReceivedQuantity(tokenOneAmount, baseInfo);
+          let receiveQuantity = calculateExpectedReceivedQuantity(tokenOneAmount, info.data);
           console.log('INFO', receiveQuantity);
           setExpectedReceiveQuantity(receiveQuantity);
         } catch (error) {
@@ -380,12 +352,14 @@ function Swap(props) {
 
   console.group('User Account Information')
   console.log("Account Info: ", accountInfo);
+  console.log('Coin List', coinList);
   console.log("Account Currencies: ", accountCurrencies);
   console.log('Receive Currencies: ', receiveCurrencies);
   console.log('Send Currencies: ', sendCurrencies);
   console.log('User Tokens and Balances: ', userTokensAndBalances);
   console.log('Base Info: ', baseInfo);
   console.log('Receiving Address: ', receivingAddress);
+  console.log('token two', tokenTwo)
   console.groupEnd();
 
   return (
@@ -422,17 +396,17 @@ function Swap(props) {
         title="Select a token"
       >
         <div className="modalContent">
-          {updatedTokenList?.map((e, i) => {
+          {supportedCoins?.map((e, i) => {
             return (
               <div
                 className="tokenChoice"
                 key={i}
                 onClick={() => modifyToken(i, 'second')}
               >
-                <img src={e.img} alt={e.ticker} className="tokenLogo" />
+                <CoinLogo coinAllCode={e.coinAllCode} className="tokenLogo" />
                 <div className="tokenChoiceNames">
                   <div className="tokenName">{e.name}</div>
-                  <div className="tokenTicker">{e.ticker}</div>
+                  <div className="tokenTicker">{e.coinCode}</div>
                 </div>
               </div>
             );
@@ -487,12 +461,8 @@ function Swap(props) {
               <DownOutlined rev={undefined} />
             </div>
             <div className="assetTwo" onClick={() => openModalTwo(2)}>
-              <img
-                src={tokenTwo.img}
-                alt="assetOneLogo"
-                className="assetLogo"
-              />
-              {tokenTwo.ticker}
+              <CoinLogo coinAllCode={tokenTwo.coinAllCode} />
+              {tokenTwo.coinCode}
               <DownOutlined rev={undefined} />
             </div>
           </div>
